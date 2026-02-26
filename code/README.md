@@ -11,8 +11,6 @@ code/
     01_run_single_rep.R    # Fit 4 models for one replicate of one scenario
     02_aggregate_scenario.R  # Aggregate per-rep files for a single scenario
     03_aggregate_all.R     # Aggregate all scenarios into summary CSV
-    run_all_g16.R          # Full sequential runner: all 32 g16 scenarios
-    run_scenario.R         # Quick single-scenario runner (100 reps, psi=0.5, theta=0.2/0.8)
   gaussian/
     helpers.R              # Gaussian-specific: generate_gaussian_obs, metrics, bayesImageS PFAB
     01_run_single_rep.R    # Fit 4 methods for one replicate of one Gaussian scenario
@@ -25,13 +23,6 @@ code/
 32 scenarios, 100 replicates each, 4 models (mrf_exact, mrf_pl, mdgm_st, mdgm_ao):
 
 ```bash
-# Run all 32 scenarios sequentially
-Rscript code/binary/run_all_g16.R
-
-# Run a single scenario by index (1-32)
-Rscript code/binary/run_all_g16.R 1
-
-# Run via GNU parallel (recommended for servers)
 ./scripts/binary/run_scenario.sh 1        # scenario 1, 100 reps
 ./scripts/binary/batch_server1.sh         # scenarios 5-8, 13-16
 ```
