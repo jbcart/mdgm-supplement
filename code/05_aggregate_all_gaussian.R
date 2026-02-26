@@ -17,7 +17,7 @@ if (length(files) == 0) {
 
 cat(sprintf("Found %d Gaussian scenario files\n", length(files)))
 
-model_names <- c("mdgm_st", "mdgm_ao", "mrf_pl", "bis_smc")
+model_names <- c("mdgm_st", "mdgm_ao", "mrf_pl", "bis_pfab")
 rows <- list()
 
 for (f in files) {

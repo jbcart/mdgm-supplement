@@ -119,27 +119,30 @@ compute_metrics_gaussian <- function(result, z_true, nug, burnin, elapsed, k) {
   )
 }
 
-#' Compute metrics from a bayesImageS smcPotts result
+#' Compute metrics from a bayesImageS mcmcPotts (PFAB) result
 #'
-#' @param smc_result Result from smcPotts().
+#' @param pfab_result Result from mcmcPotts() with algorithm="aux".
 #' @param z_true True latent field (0-indexed integer vector).
 #' @param elapsed Elapsed time in seconds.
 #' @param k Number of classes.
 #' @return Named list of metrics.
-compute_metrics_bayesImageS <- function(smc_result, z_true, elapsed, k) {
-  # smcPotts returns alloc: matrix of posterior allocation probabilities
-  # (n_sites x k). Get MAP estimate.
-  z_est <- max.col(smc_result$alloc) - 1L  # 0-indexed
+compute_metrics_bayesImageS <- function(pfab_result, z_true, elapsed, k) {
+  # mcmcPotts returns $alloc: n_sites x k matrix of post-burn-in allocation
+  # counts. MAP estimate = column with highest count per row.
+  z_est <- max.col(pfab_result$alloc) - 1L  # 0-indexed
 
   ari <- mclust::adjustedRandIndex(z_est, z_true)
 
   z_aligned <- label_align(z_est, z_true, k)
   misclass <- mean(z_aligned != z_true)
 
+  # Extract beta posterior mean from MCMC chain
+  psi_pm <- mean(pfab_result$beta)
+
   list(
     ari = ari,
     misclass = misclass,
-    psi_pm = NA_real_,
+    psi_pm = psi_pm,
     rhat_psi = NA_real_,
     eq_pm = NA_real_,
     eq_true = NA_real_,
@@ -149,19 +152,126 @@ compute_metrics_bayesImageS <- function(smc_result, z_true, elapsed, k) {
   )
 }
 
-#' Fit bayesImageS smcPotts model
+#' PFAB precomputation: run swNoData and fit parametric surrogate
 #'
-#' Wrapper around bayesImageS::smcPotts with standard settings.
+#' Runs Swendsen-Wang simulations without data at a grid of beta values, then
+#' fits a piecewise parametric model to the sufficient statistic curve to obtain
+#' the surrogate parameters needed by mcmcPotts(algorithm="aux").
+#'
+#' @param grid_rows Number of grid rows.
+#' @param grid_cols Number of grid columns.
+#' @param k Number of classes.
+#' @param n_sw Number of Swendsen-Wang iterations per beta (default 800).
+#' @param burn Burn-in iterations to discard (default 201).
+#' @return Named list of mh parameters for mcmcPotts().
+pfab_precompute <- function(grid_rows, grid_cols, k, n_sw = 800L, burn = 201L) {
+  mask <- matrix(1L, nrow = grid_rows, ncol = grid_cols)
+  neigh <- bayesImageS::getNeighbors(mask, c(2, 2, 0, 0))
+  block <- bayesImageS::getBlocks(mask, 2)
+
+  # Analytical constants
+  n_edges <- 2L * grid_rows * grid_cols - grid_rows - grid_cols
+  bcrit <- log(1 + sqrt(k))
+  E0 <- n_edges / k
+  V0 <- n_edges * (1 / k) * (1 - 1 / k)
+  maxS <- n_edges
+
+  # Beta grid with density near bcrit (following PFAB vignette)
+  beta_grid <- sort(unique(c(
+    seq(0, 1, by = 0.1),
+    seq(1.05, 1.15, by = 0.05),
+    bcrit - 0.05, bcrit - 0.02, bcrit + 0.02,
+    seq(1.3, 1.4, by = 0.05),
+    seq(1.5, 2, by = 0.1),
+    2.5, 3
+  )))
+
+  cat(sprintf("  PFAB precompute: k=%d, grid=%dx%d, %d beta values\n",
+              k, grid_rows, grid_cols, length(beta_grid)))
+
+  # Run swNoData at each beta
+  emp_mean <- numeric(length(beta_grid))
+  emp_var <- numeric(length(beta_grid))
+
+  for (i in seq_along(beta_grid)) {
+    res <- bayesImageS::swNoData(beta_grid[i], k, neigh, block, niter = n_sw)
+    s <- res$sum[burn:n_sw, 1]
+    emp_mean[i] <- mean(s)
+    emp_var[i] <- var(s)
+  }
+
+  # Fit piecewise mean curve to extract Ecrit, phi1, phi2
+  # For beta <= bcrit: E(beta) = E0 + (Ecrit - E0) * (beta/bcrit)^phi1
+  # For beta >  bcrit: E(beta) = maxS - (maxS - Ecrit) * ((bmax - beta)/(bmax - bcrit))^phi2
+  bmax <- max(beta_grid)
+
+  fit_mean <- function(par) {
+    Ecrit <- par[1]
+    phi1 <- exp(par[2])  # ensure positive
+    phi2 <- exp(par[3])
+
+    pred <- numeric(length(beta_grid))
+    for (i in seq_along(beta_grid)) {
+      b <- beta_grid[i]
+      if (b <= bcrit) {
+        pred[i] <- E0 + (Ecrit - E0) * (b / bcrit)^phi1
+      } else {
+        pred[i] <- maxS - (maxS - Ecrit) * ((bmax - b) / (bmax - bcrit))^phi2
+      }
+    }
+    sum((pred - emp_mean)^2)
+  }
+
+  # Initial values
+  Ecrit_init <- emp_mean[which.min(abs(beta_grid - bcrit))]
+  opt <- optim(c(Ecrit_init, log(2), log(2)), fit_mean, method = "Nelder-Mead",
+               control = list(maxit = 10000))
+  Ecrit <- opt$par[1]
+  phi1 <- exp(opt$par[2])
+  phi2 <- exp(opt$par[3])
+
+  # Variance peaks below/above critical temperature
+  below <- beta_grid <= bcrit
+  above <- beta_grid > bcrit
+  Vmax1 <- max(emp_var[below])
+  Vmax2 <- if (any(above)) max(emp_var[above]) else Vmax1
+
+  cat(sprintf("  PFAB params: Ecrit=%.1f, phi1=%.3f, phi2=%.3f, Vmax1=%.0f, Vmax2=%.0f\n",
+              Ecrit, phi1, phi2, Vmax1, Vmax2))
+
+  list(
+    algorithm = "aux",
+    bandwidth = 0.02,
+    Vmax1 = Vmax1,
+    Vmax2 = Vmax2,
+    E0 = E0,
+    Ecrit = Ecrit,
+    phi1 = phi1,
+    phi2 = phi2,
+    factor = 1,
+    bcrit = bcrit,
+    V0 = V0
+  )
+}
+
+#' Fit bayesImageS mcmcPotts with PFAB algorithm
+#'
+#' Wrapper around bayesImageS::mcmcPotts with algorithm="aux" using
+#' precomputed surrogate parameters.
 #'
 #' @param y_vec Numeric vector of observations (one per site).
 #' @param grid_rows Number of grid rows.
 #' @param grid_cols Number of grid columns.
 #' @param k Number of classes.
-#' @return Result from smcPotts().
-fit_bayesImageS_smc <- function(y_vec, grid_rows, grid_cols, k) {
+#' @param mh_params Precomputed PFAB parameters from pfab_precompute().
+#' @param niter Total MCMC iterations (default 55000).
+#' @param nburn Burn-in iterations (default 5000).
+#' @return Result from mcmcPotts().
+fit_bayesImageS_pfab <- function(y_vec, grid_rows, grid_cols, k, mh_params,
+                                 niter = 55000L, nburn = 5000L) {
   mask <- matrix(1L, nrow = grid_rows, ncol = grid_cols)
-  neighbors <- bayesImageS::getNeighbors(mask, c(2, 2, 0, 0))
-  blocks <- bayesImageS::getBlocks(mask, 2)
+  neigh <- bayesImageS::getNeighbors(mask, c(2, 2, 0, 0))
+  block <- bayesImageS::getBlocks(mask, 2)
 
   priors <- list()
   priors$k <- k
@@ -169,9 +279,8 @@ fit_bayesImageS_smc <- function(y_vec, grid_rows, grid_cols, k) {
   priors$mu.sd <- rep(100, k)
   priors$sigma <- rep(1, k)
   priors$sigma.nu <- rep(3, k)
-  priors$beta <- c(0, 1.5)  # uniform prior on beta in [0, 1.5]
+  priors$beta <- c(0, log(1 + sqrt(k)) + 0.5)
 
-  param <- list(npart = 10000L, nstat = 50L)
-
-  bayesImageS::smcPotts(y_vec, neighbors, blocks, priors, param = param)
+  bayesImageS::mcmcPotts(y_vec, neigh, block, priors, mh_params,
+                          niter = niter, nburn = nburn)
 }

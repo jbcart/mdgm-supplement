@@ -17,13 +17,13 @@ N_REPS=${2:-50}
 
 # Get scenario tag by running R to look it up
 SCENARIO_TAG=$(Rscript -e '
-beta_k2 <- c(0.22, 0.44, 0.66, 0.88, 1.10, 1.32)
-beta_k3 <- c(0.2, 0.4, 0.6, 0.8, 1.0, 1.2)
-beta_k6 <- c(0.3, 0.5, 0.7, 0.9, 1.1, 1.3)
+beta_k2 <- c(0.15, 0.30, 0.45, 0.60, 0.75, 0.85)
+beta_k3 <- c(0.17, 0.33, 0.50, 0.67, 0.83, 1.00)
+beta_k6 <- c(0.20, 0.40, 0.60, 0.80, 1.00, 1.20)
 scenarios <- character(0)
 for (b in beta_k2) scenarios <- c(scenarios, sprintf("gauss_k2_b%s_g100", gsub("\\\\.", "_", sprintf("%.2f", b))))
-for (b in beta_k3) scenarios <- c(scenarios, sprintf("gauss_k3_b%s_g100", gsub("\\\\.", "_", sprintf("%.1f", b))))
-for (b in beta_k6) scenarios <- c(scenarios, sprintf("gauss_k6_b%s_g100", gsub("\\\\.", "_", sprintf("%.1f", b))))
+for (b in beta_k3) scenarios <- c(scenarios, sprintf("gauss_k3_b%s_g100", gsub("\\\\.", "_", sprintf("%.2f", b))))
+for (b in beta_k6) scenarios <- c(scenarios, sprintf("gauss_k6_b%s_g100", gsub("\\\\.", "_", sprintf("%.2f", b))))
 cat(scenarios['"$SCENARIO_IDX"'])
 ')
 

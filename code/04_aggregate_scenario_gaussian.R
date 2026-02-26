@@ -23,7 +23,7 @@ if (length(rep_files) == 0) {
 n_reps <- length(rep_files)
 cat(sprintf("Aggregating %d replicates for %s\n", n_reps, sc_tag))
 
-model_names <- c("mdgm_st", "mdgm_ao", "mrf_pl", "bis_smc")
+model_names <- c("mdgm_st", "mdgm_ao", "mrf_pl", "bis_pfab")
 all_metrics <- vector("list", n_reps)
 
 for (i in seq_along(rep_files)) {

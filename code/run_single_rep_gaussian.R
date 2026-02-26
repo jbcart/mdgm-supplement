@@ -22,16 +22,17 @@ grid_cols <- 100L
 n_iter <- 5000L
 burnin <- 1000L
 
-model_names <- c("mdgm_st", "mdgm_ao", "mrf_pl", "bis_smc")
+model_names <- c("mdgm_st", "mdgm_ao", "mrf_pl", "bis_pfab")
 
 # --- Define 18 scenarios ---
-# k=2 (Ising): 6 scenarios
-# k=3 (Potts): 6 scenarios
-# k=6 (Potts): 6 scenarios
+# Beta grids stay at or below critical value beta_c = log(1 + sqrt(k)):
+#   k=2: beta_c ~= 0.881
+#   k=3: beta_c ~= 1.005
+#   k=6: beta_c ~= 1.243
 scenarios <- list()
 
-# k=2: beta = 0.22, 0.44, 0.66, 0.88, 1.10, 1.32
-beta_k2 <- c(0.22, 0.44, 0.66, 0.88, 1.10, 1.32)
+# k=2 (Ising): 6 evenly spaced values from ~0.17*beta_c to ~0.96*beta_c
+beta_k2 <- c(0.15, 0.30, 0.45, 0.60, 0.75, 0.85)
 for (beta in beta_k2) {
   tag <- sprintf("gauss_k2_b%s_g100", gsub("\\.", "_", sprintf("%.2f", beta)))
   scenarios[[tag]] <- list(
@@ -40,20 +41,20 @@ for (beta in beta_k2) {
   )
 }
 
-# k=3: beta = 0.2, 0.4, 0.6, 0.8, 1.0, 1.2
-beta_k3 <- c(0.2, 0.4, 0.6, 0.8, 1.0, 1.2)
+# k=3 (Potts): 6 evenly spaced values from ~0.17*beta_c to ~1.00*beta_c
+beta_k3 <- c(0.17, 0.33, 0.50, 0.67, 0.83, 1.00)
 for (beta in beta_k3) {
-  tag <- sprintf("gauss_k3_b%s_g100", gsub("\\.", "_", sprintf("%.1f", beta)))
+  tag <- sprintf("gauss_k3_b%s_g100", gsub("\\.", "_", sprintf("%.2f", beta)))
   scenarios[[tag]] <- list(
     k = 3L, beta = beta,
     mu = c(-1, 0, 1), sigma2 = c(1, 1, 1)
   )
 }
 
-# k=6: beta = 0.3, 0.5, 0.7, 0.9, 1.1, 1.3
-beta_k6 <- c(0.3, 0.5, 0.7, 0.9, 1.1, 1.3)
+# k=6 (Potts): 6 evenly spaced values from ~0.16*beta_c to ~0.97*beta_c
+beta_k6 <- c(0.20, 0.40, 0.60, 0.80, 1.00, 1.20)
 for (beta in beta_k6) {
-  tag <- sprintf("gauss_k6_b%s_g100", gsub("\\.", "_", sprintf("%.1f", beta)))
+  tag <- sprintf("gauss_k6_b%s_g100", gsub("\\.", "_", sprintf("%.2f", beta)))
   scenarios[[tag]] <- list(
     k = 6L, beta = beta,
     mu = c(-1.0, -0.5, 0.0, 0.5, 1.0, 1.5), sigma2 = rep(1, 6)
@@ -149,26 +150,42 @@ for (name in c("mdgm_st", "mdgm_ao", "mrf_pl")) {
               rep_metrics[[name]]$misclass, elapsed))
 }
 
-# --- Fit bayesImageS smcPotts ---
+# --- Fit bayesImageS PFAB (mcmcPotts with algorithm="aux") ---
+# Load or compute PFAB surrogate parameters (cached per grid-size x k combo)
+pfab_cache_dir <- file.path("output", "pfab_cache")
+dir.create(pfab_cache_dir, showWarnings = FALSE, recursive = TRUE)
+pfab_cache_file <- file.path(pfab_cache_dir,
+                              sprintf("k%d_g%d.rds", k, grid_rows))
+
+if (file.exists(pfab_cache_file)) {
+  mh_params <- readRDS(pfab_cache_file)
+  cat(sprintf("  PFAB: loaded cached params from %s\n", pfab_cache_file))
+} else {
+  cat("  PFAB: running precomputation (swNoData)...\n")
+  mh_params <- pfab_precompute(grid_rows, grid_cols, k)
+  saveRDS(mh_params, pfab_cache_file)
+  cat(sprintf("  PFAB: cached params to %s\n", pfab_cache_file))
+}
+
 t0 <- proc.time()
-smc_result <- tryCatch(
-  fit_bayesImageS_smc(y_vec, grid_rows, grid_cols, k),
+pfab_result <- tryCatch(
+  fit_bayesImageS_pfab(y_vec, grid_rows, grid_cols, k, mh_params),
   error = function(e) {
-    cat(sprintf("\n  bis_smc ERROR: %s", e$message))
+    cat(sprintf("\n  bis_pfab ERROR: %s", e$message))
     NULL
   }
 )
 elapsed <- (proc.time() - t0)[["elapsed"]]
 
-if (!is.null(smc_result)) {
-  rep_metrics[["bis_smc"]] <- compute_metrics_bayesImageS(
-    smc_result, z_true, elapsed, k
+if (!is.null(pfab_result)) {
+  rep_metrics[["bis_pfab"]] <- compute_metrics_bayesImageS(
+    pfab_result, z_true, elapsed, k
   )
-  cat(sprintf("  bis_smc: ARI=%.3f misclass=%.3f t=%.0fs",
-              rep_metrics[["bis_smc"]]$ari,
-              rep_metrics[["bis_smc"]]$misclass, elapsed))
+  cat(sprintf("  bis_pfab: ARI=%.3f misclass=%.3f t=%.0fs",
+              rep_metrics[["bis_pfab"]]$ari,
+              rep_metrics[["bis_pfab"]]$misclass, elapsed))
 } else {
-  rep_metrics[["bis_smc"]] <- list(
+  rep_metrics[["bis_pfab"]] <- list(
     ari = NA_real_, misclass = NA_real_,
     psi_pm = NA_real_, rhat_psi = NA_real_,
     eq_pm = NA_real_, eq_true = NA_real_,
