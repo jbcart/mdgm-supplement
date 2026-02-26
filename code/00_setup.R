@@ -5,3 +5,7 @@ if (!requireNamespace("remotes", quietly = TRUE)) {
 }
 
 remotes::install_github("jbcart/mdgm")
+
+# Gaussian simulation study dependencies
+install.packages("mclust")      # adjustedRandIndex
+install.packages("bayesImageS") # smcPotts, getNeighbors, getBlocks
