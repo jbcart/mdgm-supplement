@@ -33,7 +33,7 @@ echo "=== Scenario $SCENARIO_IDX: $SCENARIO_TAG ($N_REPS replicates) ==="
 mkdir -p "output/$SCENARIO_TAG"
 
 # Run replicates in parallel (25% of available cores)
-seq 1 "$N_REPS" | parallel --jobs 25% --progress \
+seq 1 "$N_REPS" | parallel --jobs 8% --progress \
   "Rscript code/gaussian/01_run_single_rep.R $SCENARIO_IDX {}"
 
 echo ""
