@@ -1,7 +1,7 @@
 ## Simulation scenario: 100 replicates on a 16x16 grid with Bernoulli emissions
 ## Each replicate generates fresh exact MRF data and fits 4 models.
 
-source(file.path("code", "helpers.R"))
+source(file.path("code", "common", "helpers.R"))
 
 # --- Scenario parameters ---
 grid_rows <- 16L

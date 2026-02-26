@@ -1,10 +1,10 @@
 ## Full simulation study: all 32 g16 scenarios from batch_master
 ## Each scenario: 100 replicates, 4 models (mrf_exact, mrf_pl, mdgm_st, mdgm_ao)
 ##
-## Usage: Rscript code/run_all_g16.R
-##   or:  Rscript code/run_all_g16.R <scenario_index>   # run a single scenario (1-32)
+## Usage: Rscript code/binary/run_all_g16.R
+##   or:  Rscript code/binary/run_all_g16.R <scenario_index>   # run a single scenario (1-32)
 
-source(file.path("code", "helpers.R"))
+source(file.path("code", "common", "helpers.R"))
 
 # --- Fixed parameters ---
 grid_rows <- 16L

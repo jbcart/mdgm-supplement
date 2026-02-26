@@ -1,16 +1,16 @@
 ## Aggregate per-rep files for a single scenario
 ##
-## Usage: Rscript code/04_aggregate_scenario.R <scenario_tag>
+## Usage: Rscript code/binary/02_aggregate_scenario.R <scenario_tag>
 ##
 ## Reads all output/<tag>/rep_*.rds files, computes TV distances
 ## (mrf_exact as reference), and saves combined output/<tag>_100rep.rds
 ## in the same format as run_all_g16.R output.
 
-source(file.path("code", "helpers.R"))
+source(file.path("code", "common", "helpers.R"))
 
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) < 1) {
-  stop("Usage: Rscript code/04_aggregate_scenario.R <scenario_tag>")
+  stop("Usage: Rscript code/binary/02_aggregate_scenario.R <scenario_tag>")
 }
 sc_tag <- args[1]
 

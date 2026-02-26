@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 ## Run all replicates for a single scenario using GNU parallel
 ##
-## Usage: ./run_scenario.sh <scenario_index> [n_replicates]
+## Usage: ./scripts/binary/run_scenario.sh <scenario_index> [n_replicates]
 ##
 ## Runs `parallel --jobs 25%` over replicates, then aggregates.
 
@@ -33,10 +33,10 @@ mkdir -p "output/$SCENARIO_TAG"
 
 # Run replicates in parallel (25% of available cores)
 seq 1 "$N_REPS" | parallel --jobs 25% --progress \
-  "Rscript code/run_single_rep.R $SCENARIO_IDX {}"
+  "Rscript code/binary/01_run_single_rep.R $SCENARIO_IDX {}"
 
 echo ""
 echo "All $N_REPS replicates complete for $SCENARIO_TAG"
 
 # Aggregate per-rep files into combined result
-Rscript code/04_aggregate_scenario.R "$SCENARIO_TAG"
+Rscript code/binary/02_aggregate_scenario.R "$SCENARIO_TAG"

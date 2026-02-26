@@ -1,13 +1,13 @@
 ## Aggregate per-rep files for a single Gaussian scenario
 ##
-## Usage: Rscript code/04_aggregate_scenario_gaussian.R <scenario_tag>
+## Usage: Rscript code/gaussian/02_aggregate_scenario.R <scenario_tag>
 ##
 ## Reads all output/<tag>/rep_*.rds files and saves combined
 ## output/<tag>_50rep.rds.
 
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) < 1) {
-  stop("Usage: Rscript code/04_aggregate_scenario_gaussian.R <scenario_tag>")
+  stop("Usage: Rscript code/gaussian/02_aggregate_scenario.R <scenario_tag>")
 }
 sc_tag <- args[1]
 

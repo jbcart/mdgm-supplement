@@ -1,16 +1,16 @@
 ## Fit all 4 models for a single replicate of a single scenario
 ##
-## Usage: Rscript code/run_single_rep.R <scenario_index> <rep>
+## Usage: Rscript code/binary/01_run_single_rep.R <scenario_index> <rep>
 ##
 ## Saves per-rep results (without TV distance) to:
 ##   output/<scenario_tag>/rep_<NNN>.rds
 
-source(file.path("code", "helpers.R"))
+source(file.path("code", "common", "helpers.R"))
 
 # --- Parse args ---
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) < 2) {
-  stop("Usage: Rscript code/run_single_rep.R <scenario_index> <rep>")
+  stop("Usage: Rscript code/binary/01_run_single_rep.R <scenario_index> <rep>")
 }
 sc_idx <- as.integer(args[1])
 rep <- as.integer(args[2])

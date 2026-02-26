@@ -1,6 +1,6 @@
 ## Aggregate all Gaussian scenario results into a final summary CSV
 ##
-## Usage: Rscript code/05_aggregate_all_gaussian.R [output_dir]
+## Usage: Rscript code/gaussian/03_aggregate_all.R [output_dir]
 ##
 ## Reads all output/gauss_*_Nrep.rds files and produces
 ## output/summary_gaussian.csv with one row per (scenario, model).

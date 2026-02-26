@@ -1,17 +1,17 @@
 ## Fit all 4 methods for a single replicate of one Gaussian scenario
 ##
-## Usage: Rscript code/run_single_rep_gaussian.R <scenario_index> <rep>
+## Usage: Rscript code/gaussian/01_run_single_rep.R <scenario_index> <rep>
 ##
 ## Saves per-rep results to:
 ##   output/<scenario_tag>/rep_<NNN>.rds
 
-source(file.path("code", "helpers.R"))
-source(file.path("code", "helpers_gaussian.R"))
+source(file.path("code", "common", "helpers.R"))
+source(file.path("code", "gaussian", "helpers.R"))
 
 # --- Parse args ---
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) < 2) {
-  stop("Usage: Rscript code/run_single_rep_gaussian.R <scenario_index> <rep>")
+  stop("Usage: Rscript code/gaussian/01_run_single_rep.R <scenario_index> <rep>")
 }
 sc_idx <- as.integer(args[1])
 rep <- as.integer(args[2])

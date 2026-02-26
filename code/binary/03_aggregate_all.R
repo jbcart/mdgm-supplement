@@ -1,6 +1,6 @@
 ## Aggregate all scenario results into a final summary CSV
 ##
-## Usage: Rscript code/05_aggregate_all.R [output_dir]
+## Usage: Rscript code/binary/03_aggregate_all.R [output_dir]
 ##
 ## Reads all output/*_100rep.rds (or *_Nrep.rds) files and produces
 ## output/summary_all.csv with one row per (scenario, model).
