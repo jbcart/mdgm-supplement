@@ -165,6 +165,7 @@ for (name in c("mdgm_st", "mdgm_ao", "mrf_pl")) {
   fit <- mcmc(model, y = y, z_init = z_init,
               psi_init = cfg$psi_init, theta_init = theta_init,
               n_iter = n_iter, psi_tune = cfg$psi_tune,
+              store_z = TRUE,
               seed = as.integer((data_seed + match(name, model_names) * 999983L) %% .Machine$integer.max),
               nug = nug)
   elapsed <- (proc.time() - t0)[["elapsed"]]
@@ -172,9 +173,10 @@ for (name in c("mdgm_st", "mdgm_ao", "mrf_pl")) {
   rep_metrics[[name]] <- compute_metrics_gaussian(
     fit, z_true, nug, burnin, elapsed, k
   )
-  cat(sprintf("  %s: ARI=%.3f misclass=%.3f t=%.0fs",
+  cat(sprintf("  %s: ARI=%.3f misclass=%.3f brier=%.3f t=%.0fs",
               name, rep_metrics[[name]]$ari,
-              rep_metrics[[name]]$misclass, elapsed))
+              rep_metrics[[name]]$misclass,
+              rep_metrics[[name]]$brier, elapsed))
 
   rm(fit, model); gc()
 }
@@ -186,6 +188,7 @@ dir.create(pfab_cache_dir, showWarnings = FALSE, recursive = TRUE)
 pfab_cache_file <- file.path(pfab_cache_dir,
                               sprintf("k%d_g%d.rds", k, grid_rows))
 
+t0_pre <- proc.time()
 if (file.exists(pfab_cache_file)) {
   mh_params <- readRDS(pfab_cache_file)
   cat(sprintf("  PFAB: loaded cached params from %s\n", pfab_cache_file))
@@ -195,6 +198,8 @@ if (file.exists(pfab_cache_file)) {
   saveRDS(mh_params, pfab_cache_file)
   cat(sprintf("  PFAB: cached params to %s\n", pfab_cache_file))
 }
+elapsed_pre <- (proc.time() - t0_pre)[["elapsed"]]
+cat(sprintf("  PFAB precompute: %.0fs\n", elapsed_pre))
 
 t0 <- proc.time()
 pfab_result <- tryCatch(
@@ -210,9 +215,11 @@ if (!is.null(pfab_result)) {
   rep_metrics[["bis_pfab"]] <- compute_metrics_bayesImageS(
     pfab_result, z_true, elapsed, k, nug
   )
-  cat(sprintf("  bis_pfab: ARI=%.3f misclass=%.3f t=%.0fs",
+  rep_metrics[["bis_pfab"]]$elapsed_pre <- elapsed_pre
+  cat(sprintf("  bis_pfab: ARI=%.3f misclass=%.3f brier=%.3f t=%.0fs (pre=%.0fs)",
               rep_metrics[["bis_pfab"]]$ari,
-              rep_metrics[["bis_pfab"]]$misclass, elapsed))
+              rep_metrics[["bis_pfab"]]$misclass,
+              rep_metrics[["bis_pfab"]]$brier, elapsed, elapsed_pre))
 } else {
   rep_metrics[["bis_pfab"]] <- list(
     ari = NA_real_, misclass = NA_real_,
@@ -220,7 +227,7 @@ if (!is.null(pfab_result)) {
     eq_pm = NA_real_, eq_true = NA_real_,
     eq_pmse = NA_real_, brier = NA_real_,
     accept_psi = NA_real_, accept_graph = NA_real_,
-    elapsed = elapsed
+    elapsed = elapsed, elapsed_pre = elapsed_pre
   )
 }
 cat("\n")

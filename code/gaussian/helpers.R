@@ -125,7 +125,8 @@ compute_metrics_gaussian <- function(result, z_true, nug, burnin, elapsed, k) {
     brier = brier,
     accept_psi = ar[["psi"]],
     accept_graph = ar[["graph"]],
-    elapsed = elapsed
+    elapsed = elapsed,
+    elapsed_pre = NA_real_
   )
 }
 

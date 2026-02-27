@@ -32,14 +32,15 @@ for (i in seq_along(rep_files)) {
 
 # --- Print summary table ---
 cat(sprintf("\n--- %s: aggregated across %d replicates ---\n", sc_tag, n_reps))
-cat(sprintf("%-12s %10s %10s %10s\n",
-            "Model", "ARI", "Misclass", "Time"))
-cat(paste(rep("-", 46), collapse = ""), "\n")
+cat(sprintf("%-12s %10s %10s %10s %10s\n",
+            "Model", "ARI", "Misclass", "Brier", "Time"))
+cat(paste(rep("-", 56), collapse = ""), "\n")
 
 for (name in model_names) {
   vals <- lapply(all_metrics, function(r) r[[name]])
   ari_vals <- vapply(vals, function(v) v$ari, double(1))
   mc_vals <- vapply(vals, function(v) v$misclass, double(1))
+  br_vals <- vapply(vals, function(v) v$brier, double(1))
   t_vals <- vapply(vals, function(v) v$elapsed, double(1))
 
   # Handle NAs (e.g., bayesImageS failures)
@@ -47,16 +48,19 @@ for (name in model_names) {
   ari_sd <- sd(ari_vals, na.rm = TRUE)
   mc_mean <- mean(mc_vals, na.rm = TRUE)
   mc_sd <- sd(mc_vals, na.rm = TRUE)
+  br_mean <- mean(br_vals, na.rm = TRUE)
+  br_sd <- sd(br_vals, na.rm = TRUE)
   t_mean <- mean(t_vals, na.rm = TRUE)
   t_sd <- sd(t_vals, na.rm = TRUE)
 
-  cat(sprintf("%-12s %5.3f(%3.0f) %5.3f(%3.0f) %5.1f(%4.1f)\n",
+  cat(sprintf("%-12s %5.3f(%3.0f) %5.3f(%3.0f) %5.3f(%3.0f) %5.1f(%4.1f)\n",
               name,
               ari_mean, 1000 * ari_sd,
               mc_mean, 1000 * mc_sd,
+              br_mean, 1000 * br_sd,
               t_mean, t_sd))
 }
-cat("(parentheses = SD x 1000 for ARI/misclass, SD for time)\n\n")
+cat("(parentheses = SD x 1000 for ARI/misclass/Brier, SD for time)\n\n")
 
 # --- Save combined result ---
 outfile <- sprintf("output/%s_%drep.rds", sc_tag, n_reps)

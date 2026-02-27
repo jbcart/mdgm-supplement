@@ -36,11 +36,23 @@ for (f in files) {
   for (name in model_names) {
     vals <- lapply(all_metrics, function(r) r[[name]])
 
+    safe_extract <- function(v, field) {
+      x <- v[[field]]
+      if (is.null(x)) NA_real_ else x
+    }
+
     ari_vals <- vapply(vals, function(v) v$ari, double(1))
     mc_vals <- vapply(vals, function(v) v$misclass, double(1))
+    psi_pm_vals <- vapply(vals, function(v) v$psi_pm, double(1))
+    rhat_vals <- vapply(vals, function(v) safe_extract(v, "rhat_psi"), double(1))
+    eq_pm_vals <- vapply(vals, function(v) v$eq_pm, double(1))
+    eq_true_vals <- vapply(vals, function(v) v$eq_true, double(1))
     eq_pmse_vals <- vapply(vals, function(v) v$eq_pmse, double(1))
     brier_vals <- vapply(vals, function(v) v$brier, double(1))
+    accept_psi_vals <- vapply(vals, function(v) safe_extract(v, "accept_psi"), double(1))
+    accept_graph_vals <- vapply(vals, function(v) safe_extract(v, "accept_graph"), double(1))
     t_vals <- vapply(vals, function(v) v$elapsed, double(1))
+    t_pre_vals <- vapply(vals, function(v) safe_extract(v, "elapsed_pre"), double(1))
 
     rows[[length(rows) + 1L]] <- data.frame(
       scenario = sc_tag,
@@ -54,12 +66,22 @@ for (f in files) {
       ARI_sd = sd(ari_vals, na.rm = TRUE),
       misclass_mean = mean(mc_vals, na.rm = TRUE),
       misclass_sd = sd(mc_vals, na.rm = TRUE),
+      psi_pm_mean = mean(psi_pm_vals, na.rm = TRUE),
+      psi_pm_sd = sd(psi_pm_vals, na.rm = TRUE),
+      rhat_psi_mean = mean(rhat_vals, na.rm = TRUE),
+      rhat_psi_max = max(rhat_vals, na.rm = TRUE),
+      eq_pm_mean = mean(eq_pm_vals, na.rm = TRUE),
+      eq_true_mean = mean(eq_true_vals, na.rm = TRUE),
       eq_pmse_mean = mean(eq_pmse_vals, na.rm = TRUE),
       eq_pmse_sd = sd(eq_pmse_vals, na.rm = TRUE),
       brier_mean = mean(brier_vals, na.rm = TRUE),
       brier_sd = sd(brier_vals, na.rm = TRUE),
+      accept_psi_mean = mean(accept_psi_vals, na.rm = TRUE),
+      accept_graph_mean = mean(accept_graph_vals, na.rm = TRUE),
       time_mean = mean(t_vals, na.rm = TRUE),
       time_sd = sd(t_vals, na.rm = TRUE),
+      time_pre_mean = mean(t_pre_vals, na.rm = TRUE),
+      time_pre_sd = sd(t_pre_vals, na.rm = TRUE),
       stringsAsFactors = FALSE
     )
   }

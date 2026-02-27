@@ -111,6 +111,7 @@ for (name in model_names) {
   fit <- mcmc(model, y = y, z_init = z_init,
               psi_init = cfg$psi_init, theta_init = theta_true,
               n_iter = n_iter, psi_tune = cfg$psi_tune,
+              store_z = TRUE,
               seed = as.integer((data_seed + match(name, model_names) * 999983L) %% .Machine$integer.max),
               nug = nug)
   elapsed <- (proc.time() - t0)[["elapsed"]]
