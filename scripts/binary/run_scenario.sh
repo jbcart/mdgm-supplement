@@ -1,19 +1,20 @@
 #!/usr/bin/env bash
 ## Run all replicates for a single scenario using GNU parallel
 ##
-## Usage: ./scripts/binary/run_scenario.sh <scenario_index> [n_replicates]
+## Usage: ./scripts/binary/run_scenario.sh <scenario_index> [n_replicates] [n_jobs]
 ##
-## Runs `parallel --jobs 25%` over replicates, then aggregates.
+## Runs replicates in parallel, then aggregates.
 
 set -euo pipefail
 
 if [ $# -lt 1 ]; then
-  echo "Usage: $0 <scenario_index> [n_replicates]"
+  echo "Usage: $0 <scenario_index> [n_replicates] [n_jobs]"
   exit 1
 fi
 
 SCENARIO_IDX=$1
 N_REPS=${2:-100}
+N_JOBS=${3:-12}
 
 # Get scenario tag by running R to look it up
 SCENARIO_TAG=$(Rscript -e '
@@ -31,8 +32,8 @@ echo "=== Scenario $SCENARIO_IDX: $SCENARIO_TAG ($N_REPS replicates) ==="
 # Create output directory
 mkdir -p "output/$SCENARIO_TAG"
 
-# Run replicates in parallel (25% of available cores)
-seq 1 "$N_REPS" | parallel --jobs 8% --progress \
+# Run replicates in parallel
+seq 1 "$N_REPS" | parallel --jobs "$N_JOBS" --progress \
   "Rscript code/binary/01_run_single_rep.R $SCENARIO_IDX {}"
 
 echo ""

@@ -4,8 +4,10 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
+N_JOBS=6
+
 for i in 1 2 3 4 5 6; do
-  ./scripts/gaussian/run_scenario.sh $i
+  ./scripts/gaussian/run_scenario.sh $i 20 $N_JOBS
 done
 
 echo "Server 1 Gaussian batch complete."

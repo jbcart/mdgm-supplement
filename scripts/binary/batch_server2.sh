@@ -4,8 +4,10 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
+N_JOBS=12
+
 for i in 1 2 3 4 9 10 11 12; do
-  ./scripts/binary/run_scenario.sh $i
+  ./scripts/binary/run_scenario.sh $i 100 $N_JOBS
 done
 
 echo "Server 2 batch complete."

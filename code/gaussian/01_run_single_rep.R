@@ -152,6 +152,8 @@ z_init <- sample(0L:(k - 1L), n, replace = TRUE)
 theta_init <- c(mu_true, sigma2_true)
 
 # --- Fit mdgm/mrf methods ---
+# Process one model at a time, extracting metrics and freeing the fit object
+# to avoid exhausting memory on large grids (1000x1000 → ~40 GB per MDGM chain).
 rep_metrics <- list()
 
 for (name in c("mdgm_st", "mdgm_ao", "mrf_pl")) {
@@ -173,6 +175,8 @@ for (name in c("mdgm_st", "mdgm_ao", "mrf_pl")) {
   cat(sprintf("  %s: ARI=%.3f misclass=%.3f t=%.0fs",
               name, rep_metrics[[name]]$ari,
               rep_metrics[[name]]$misclass, elapsed))
+
+  rm(fit, model); gc()
 }
 
 # --- Fit bayesImageS PFAB (mcmcPotts with algorithm="aux") ---
