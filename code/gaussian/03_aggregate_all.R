@@ -38,6 +38,8 @@ for (f in files) {
 
     ari_vals <- vapply(vals, function(v) v$ari, double(1))
     mc_vals <- vapply(vals, function(v) v$misclass, double(1))
+    eq_pmse_vals <- vapply(vals, function(v) v$eq_pmse, double(1))
+    brier_vals <- vapply(vals, function(v) v$brier, double(1))
     t_vals <- vapply(vals, function(v) v$elapsed, double(1))
 
     rows[[length(rows) + 1L]] <- data.frame(
@@ -52,6 +54,10 @@ for (f in files) {
       ARI_sd = sd(ari_vals, na.rm = TRUE),
       misclass_mean = mean(mc_vals, na.rm = TRUE),
       misclass_sd = sd(mc_vals, na.rm = TRUE),
+      eq_pmse_mean = mean(eq_pmse_vals, na.rm = TRUE),
+      eq_pmse_sd = sd(eq_pmse_vals, na.rm = TRUE),
+      brier_mean = mean(brier_vals, na.rm = TRUE),
+      brier_sd = sd(brier_vals, na.rm = TRUE),
       time_mean = mean(t_vals, na.rm = TRUE),
       time_sd = sd(t_vals, na.rm = TRUE),
       stringsAsFactors = FALSE
@@ -64,7 +70,8 @@ summary_df <- do.call(rbind, rows)
 cat(sprintf("\n%d rows (%d scenarios x %d models)\n",
             nrow(summary_df), length(files), length(model_names)))
 print(summary_df[, c("scenario", "k", "beta", "sigma", "grid", "model",
-                      "ARI_mean", "misclass_mean", "time_mean")],
+                      "ARI_mean", "misclass_mean", "eq_pmse_mean",
+                      "brier_mean", "time_mean")],
       row.names = FALSE)
 
 outfile <- file.path(output_dir, "summary_gaussian.csv")

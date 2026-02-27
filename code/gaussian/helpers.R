@@ -97,6 +97,14 @@ compute_metrics_gaussian <- function(result, z_true, nug, burnin, elapsed, k) {
   eq_true <- sufficient_stat(z_true, nug)
   eq_vec <- apply(z_mat, 2, function(z_j) sufficient_stat(z_j, nug))
   eq_pm <- mean(eq_vec)
+  eq_pmse <- mean((eq_vec - eq_true)^2)
+
+  # Brier score
+  n_post <- ncol(z_mat)
+  alloc_prop <- t(apply(z_mat, 1, function(row) tabulate(row + 1L, nbins = k))) / n_post
+  o_mat <- matrix(0, nrow = n, ncol = k)
+  for (i in seq_len(n)) o_mat[i, z_true[i] + 1L] <- 1
+  brier <- mean(rowSums((alloc_prop - o_mat)^2))
 
   # Psi diagnostics
   psi_chain <- result$psi()[post_idx]
@@ -113,6 +121,8 @@ compute_metrics_gaussian <- function(result, z_true, nug, burnin, elapsed, k) {
     rhat_psi = rhat_psi,
     eq_pm = eq_pm,
     eq_true = eq_true,
+    eq_pmse = eq_pmse,
+    brier = brier,
     accept_psi = ar[["psi"]],
     accept_graph = ar[["graph"]],
     elapsed = elapsed
@@ -126,10 +136,12 @@ compute_metrics_gaussian <- function(result, z_true, nug, burnin, elapsed, k) {
 #' @param elapsed Elapsed time in seconds.
 #' @param k Number of classes.
 #' @return Named list of metrics.
-compute_metrics_bayesImageS <- function(pfab_result, z_true, elapsed, k) {
+compute_metrics_bayesImageS <- function(pfab_result, z_true, elapsed, k,
+                                         nug, nburn = 2000L) {
   # mcmcPotts returns $alloc: n_sites x k matrix of post-burn-in allocation
   # counts. MAP estimate = column with highest count per row.
   z_est <- max.col(pfab_result$alloc) - 1L  # 0-indexed
+  n <- length(z_true)
 
   ari <- mclust::adjustedRandIndex(z_est, z_true)
 
@@ -139,13 +151,28 @@ compute_metrics_bayesImageS <- function(pfab_result, z_true, elapsed, k) {
   # Extract beta posterior mean from MCMC chain
   psi_pm <- mean(pfab_result$beta)
 
+  # Sufficient statistic: eq_pmse from full sum chain (trim to post-burnin)
+  eq_true <- sufficient_stat(z_true, nug)
+  sum_chain <- as.numeric(pfab_result$sum)
+  sum_post <- sum_chain[(nburn + 1L):length(sum_chain)]
+  eq_pm <- mean(sum_post)
+  eq_pmse <- mean((sum_post - eq_true)^2)
+
+  # Brier score from allocation proportions
+  alloc_prop <- pfab_result$alloc / rowSums(pfab_result$alloc)
+  o_mat <- matrix(0, nrow = n, ncol = k)
+  for (i in seq_len(n)) o_mat[i, z_true[i] + 1L] <- 1
+  brier <- mean(rowSums((alloc_prop - o_mat)^2))
+
   list(
     ari = ari,
     misclass = misclass,
     psi_pm = psi_pm,
     rhat_psi = NA_real_,
-    eq_pm = NA_real_,
-    eq_true = NA_real_,
+    eq_pm = eq_pm,
+    eq_true = eq_true,
+    eq_pmse = eq_pmse,
+    brier = brier,
     accept_psi = NA_real_,
     accept_graph = NA_real_,
     elapsed = elapsed
@@ -264,11 +291,11 @@ pfab_precompute <- function(grid_rows, grid_cols, k, n_sw = 800L, burn = 201L) {
 #' @param grid_cols Number of grid columns.
 #' @param k Number of classes.
 #' @param mh_params Precomputed PFAB parameters from pfab_precompute().
-#' @param niter Total MCMC iterations (default 55000).
-#' @param nburn Burn-in iterations (default 5000).
+#' @param niter Total MCMC iterations (default 10000).
+#' @param nburn Burn-in iterations (default 2000).
 #' @return Result from mcmcPotts().
 fit_bayesImageS_pfab <- function(y_vec, grid_rows, grid_cols, k, mh_params,
-                                 niter = 55000L, nburn = 5000L) {
+                                 niter = 10000L, nburn = 2000L) {
   mask <- matrix(1L, nrow = grid_rows, ncol = grid_cols)
   neigh <- bayesImageS::getNeighbors(mask, c(2, 2, 0, 0))
   block <- bayesImageS::getBlocks(mask, 2)

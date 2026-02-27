@@ -18,8 +18,8 @@ sc_idx <- as.integer(args[1])
 rep <- as.integer(args[2])
 
 # --- Fixed parameters ---
-n_iter <- 5000L
-burnin <- 1000L
+n_iter <- 10000L
+burnin <- 2000L
 
 model_names <- c("mdgm_st", "mdgm_ao", "mrf_pl", "bis_pfab")
 
@@ -204,7 +204,7 @@ elapsed <- (proc.time() - t0)[["elapsed"]]
 
 if (!is.null(pfab_result)) {
   rep_metrics[["bis_pfab"]] <- compute_metrics_bayesImageS(
-    pfab_result, z_true, elapsed, k
+    pfab_result, z_true, elapsed, k, nug
   )
   cat(sprintf("  bis_pfab: ARI=%.3f misclass=%.3f t=%.0fs",
               rep_metrics[["bis_pfab"]]$ari,
@@ -214,6 +214,7 @@ if (!is.null(pfab_result)) {
     ari = NA_real_, misclass = NA_real_,
     psi_pm = NA_real_, rhat_psi = NA_real_,
     eq_pm = NA_real_, eq_true = NA_real_,
+    eq_pmse = NA_real_, brier = NA_real_,
     accept_psi = NA_real_, accept_graph = NA_real_,
     elapsed = elapsed
   )
