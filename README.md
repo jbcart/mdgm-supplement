@@ -12,23 +12,36 @@ Supplementary code for reproducing simulation studies in:
 
 ## Quick Start
 
-```r
-# Install mdgm
-source("code/00_setup.R")
+```bash
+# Install dependencies
+Rscript code/binary/00_setup.R
 
-# Run a single scenario (quick check)
-source("code/run_scenario.R")
+# Run a single binary scenario (quick check)
+./scripts/binary/run_scenario.sh 1
+
+# Run a single Gaussian scenario
+./scripts/gaussian/run_scenario.sh 1
 ```
 
 ## Directory Structure
 
 ```
-code/          R scripts for simulation studies
-output/        Generated results (not tracked by git)
+code/
+  common/helpers.R           # Shared utilities
+  binary/                    # Binary study (16x16, Bernoulli emissions, 32 scenarios)
+  gaussian/                  # Gaussian study (100x100 + 1000x1000, 15 scenarios)
+scripts/
+  binary/                    # Shell scripts for binary batch execution
+  gaussian/                  # Shell scripts for Gaussian batch execution
+output/                      # Generated results (not tracked by git)
 ```
 
 ## Reproduction
 
-1. `Rscript code/00_setup.R` — install dependencies
-2. `Rscript code/run_scenario.R` — run a single scenario for quick verification
-3. For full simulation studies, see `code/README.md`
+1. `Rscript code/binary/00_setup.R` -- install dependencies
+2. Run individual scenarios or server batches (see `code/README.md` for details)
+3. Aggregate results:
+   ```bash
+   Rscript code/binary/03_aggregate_all.R
+   Rscript code/gaussian/03_aggregate_all.R
+   ```

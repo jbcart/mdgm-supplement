@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-## Server 1 (112 cores): k=6 scenarios (hardest, most compute)
-## Scenarios 13-18
+## Server 1 (72 cores): k=3 + k=4, 100x100 grid
+## Scenarios 1-6
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
-for i in 13 14 15 16 17 18; do
+for i in 1 2 3 4 5 6; do
   ./scripts/gaussian/run_scenario.sh $i
 done
 

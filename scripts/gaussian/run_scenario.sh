@@ -13,17 +13,23 @@ if [ $# -lt 1 ]; then
 fi
 
 SCENARIO_IDX=$1
-N_REPS=${2:-50}
+N_REPS=${2:-20}
 
 # Get scenario tag by running R to look it up
 SCENARIO_TAG=$(Rscript -e '
-beta_k2 <- c(0.15, 0.30, 0.45, 0.60, 0.75, 0.85)
-beta_k3 <- c(0.17, 0.33, 0.50, 0.67, 0.83, 1.00)
-beta_k6 <- c(0.20, 0.40, 0.60, 0.80, 1.00, 1.20)
+make_tag <- function(k, beta, sigma, grid) {
+  sprintf("gauss_k%d_b%s_s%s_g%d",
+          k,
+          gsub("\\.", "_", sprintf("%.2f", beta)),
+          gsub("\\.", "_", sprintf("%.2f", sigma)),
+          grid)
+}
 scenarios <- character(0)
-for (b in beta_k2) scenarios <- c(scenarios, sprintf("gauss_k2_b%s_g100", gsub("\\.", "_", sprintf("%.2f", b))))
-for (b in beta_k3) scenarios <- c(scenarios, sprintf("gauss_k3_b%s_g100", gsub("\\.", "_", sprintf("%.2f", b))))
-for (b in beta_k6) scenarios <- c(scenarios, sprintf("gauss_k6_b%s_g100", gsub("\\.", "_", sprintf("%.2f", b))))
+for (b in c(0.35, 0.65, 0.95)) scenarios <- c(scenarios, make_tag(3, b, 0.20, 100))
+for (b in c(0.38, 0.71, 1.04)) scenarios <- c(scenarios, make_tag(4, b, 0.20, 100))
+for (b in c(0.41, 0.76, 1.12)) scenarios <- c(scenarios, make_tag(5, b, 0.20, 100))
+for (b in c(0.41, 0.76, 1.12)) scenarios <- c(scenarios, make_tag(5, b, 0.50, 100))
+for (b in c(0.41, 0.76, 1.12)) scenarios <- c(scenarios, make_tag(5, b, 0.20, 1000))
 cat(scenarios['"$SCENARIO_IDX"'])
 ')
 

@@ -2,6 +2,7 @@
 ##
 ## Usage: Rscript code/gaussian/01_run_single_rep.R <scenario_index> <rep>
 ##
+## 15 scenarios (see scenario table below); 20 reps each.
 ## Saves per-rep results to:
 ##   output/<scenario_tag>/rep_<NNN>.rds
 
@@ -17,47 +18,69 @@ sc_idx <- as.integer(args[1])
 rep <- as.integer(args[2])
 
 # --- Fixed parameters ---
-grid_rows <- 100L
-grid_cols <- 100L
 n_iter <- 5000L
 burnin <- 1000L
 
 model_names <- c("mdgm_st", "mdgm_ao", "mrf_pl", "bis_pfab")
 
-# --- Define 18 scenarios ---
-# Beta grids stay at or below critical value beta_c = log(1 + sqrt(k)):
-#   k=2: beta_c ~= 0.881
-#   k=3: beta_c ~= 1.005
-#   k=6: beta_c ~= 1.243
+# --- Define 15 scenarios ---
+# Tag format: gauss_k<K>_b<BETA>_s<SIGMA>_g<GRID>
+# Beta values at ~0.35/0.65/0.95 × beta_c where beta_c = log(1 + sqrt(k)):
+#   k=3: beta_c ~= 1.005 → 0.35, 0.65, 0.95
+#   k=4: beta_c ~= 1.099 → 0.38, 0.71, 1.04
+#   k=5: beta_c ~= 1.179 → 0.41, 0.76, 1.12
+make_tag <- function(k, beta, sigma, grid) {
+  sprintf("gauss_k%d_b%s_s%s_g%d",
+          k,
+          gsub("\\.", "_", sprintf("%.2f", beta)),
+          gsub("\\.", "_", sprintf("%.2f", sigma)),
+          grid)
+}
+
 scenarios <- list()
 
-# k=2 (Ising): 6 evenly spaced values from ~0.17*beta_c to ~0.96*beta_c
-beta_k2 <- c(0.15, 0.30, 0.45, 0.60, 0.75, 0.85)
-for (beta in beta_k2) {
-  tag <- sprintf("gauss_k2_b%s_g100", gsub("\\.", "_", sprintf("%.2f", beta)))
+# k=3, 100x100, sigma=0.20 (indices 1-3)
+for (beta in c(0.35, 0.65, 0.95)) {
+  tag <- make_tag(3, beta, 0.20, 100)
   scenarios[[tag]] <- list(
-    k = 2L, beta = beta,
-    mu = c(-1, 1), sigma2 = c(1, 1)
+    k = 3L, beta = beta, grid = 100L,
+    mu = c(-1, 0, 1), sigma2 = rep(0.04, 3)
   )
 }
 
-# k=3 (Potts): 6 evenly spaced values from ~0.17*beta_c to ~1.00*beta_c
-beta_k3 <- c(0.17, 0.33, 0.50, 0.67, 0.83, 1.00)
-for (beta in beta_k3) {
-  tag <- sprintf("gauss_k3_b%s_g100", gsub("\\.", "_", sprintf("%.2f", beta)))
+# k=4, 100x100, sigma=0.20 (indices 4-6)
+for (beta in c(0.38, 0.71, 1.04)) {
+  tag <- make_tag(4, beta, 0.20, 100)
   scenarios[[tag]] <- list(
-    k = 3L, beta = beta,
-    mu = c(-1, 0, 1), sigma2 = c(1, 1, 1)
+    k = 4L, beta = beta, grid = 100L,
+    mu = c(-1, 0, 1, 2), sigma2 = rep(0.04, 4)
   )
 }
 
-# k=6 (Potts): 6 evenly spaced values from ~0.16*beta_c to ~0.97*beta_c
-beta_k6 <- c(0.20, 0.40, 0.60, 0.80, 1.00, 1.20)
-for (beta in beta_k6) {
-  tag <- sprintf("gauss_k6_b%s_g100", gsub("\\.", "_", sprintf("%.2f", beta)))
+# k=5, 100x100, sigma=0.20 (indices 7-9)
+for (beta in c(0.41, 0.76, 1.12)) {
+  tag <- make_tag(5, beta, 0.20, 100)
   scenarios[[tag]] <- list(
-    k = 6L, beta = beta,
-    mu = c(-1.0, -0.5, 0.0, 0.5, 1.0, 1.5), sigma2 = rep(1, 6)
+    k = 5L, beta = beta, grid = 100L,
+    mu = c(-2, -1, 0, 1, 2), sigma2 = rep(0.04, 5)
+  )
+}
+
+# k=5, 100x100, sigma=0.50 (indices 10-12)
+for (beta in c(0.41, 0.76, 1.12)) {
+  tag <- make_tag(5, beta, 0.50, 100)
+  scenarios[[tag]] <- list(
+    k = 5L, beta = beta, grid = 100L,
+    mu = c(-2, -1, 0, 1, 2), sigma2 = rep(0.25, 5)
+  )
+}
+
+# k=5, 1000x1000, sigma=0.20 (indices 13-15)
+for (beta in c(0.41, 0.76, 1.12)) {
+  tag <- make_tag(5, beta, 0.20, 1000)
+  scenarios[[tag]] <- list(
+    k = 5L, beta = beta, grid = 1000L,
+    mu = c(-2, -1, 0, 1, 2), sigma2 = rep(0.04, 5)
   )
 }
 
@@ -71,11 +94,14 @@ k <- sc$k
 beta_true <- sc$beta
 mu_true <- sc$mu
 sigma2_true <- sc$sigma2
+grid_rows <- sc$grid
+grid_cols <- sc$grid
 
-cat(sprintf("[%s] rep %d: k=%d, beta=%.2f, mu=(%s), sigma2=(%s)\n",
+cat(sprintf("[%s] rep %d: k=%d, beta=%.2f, mu=(%s), sigma2=(%s), grid=%dx%d\n",
             sc_name, rep, k, beta_true,
             paste(mu_true, collapse = ","),
-            paste(sigma2_true, collapse = ",")))
+            paste(sigma2_true, collapse = ","),
+            grid_rows, grid_cols))
 
 # --- Auxiliary sweeps for data generation ---
 get_n_sw_sweeps <- function(beta) {
@@ -86,7 +112,6 @@ get_n_sw_sweeps <- function(beta) {
 
 # --- Model config factory ---
 make_model_configs <- function(beta_true, k) {
-  n_aux <- get_n_sw_sweeps(beta_true)
   list(
     mdgm_st = list(
       spatial = mdgm(dag_type = "spanning_tree"),

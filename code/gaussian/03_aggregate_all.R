@@ -25,11 +25,13 @@ for (f in files) {
   all_metrics <- readRDS(f)
   n_reps <- length(all_metrics)
 
-  # Parse scenario tag to extract k and beta
-  # Format: gauss_k<K>_b<BETA>_g100
-  parts <- regmatches(sc_tag, regexec("gauss_k(\\d+)_b(.+)_g100", sc_tag))[[1]]
+  # Parse scenario tag to extract k, beta, sigma, grid
+  # Format: gauss_k<K>_b<BETA>_s<SIGMA>_g<GRID>
+  parts <- regmatches(sc_tag, regexec("gauss_k(\\d+)_b(.+)_s(.+)_g(\\d+)", sc_tag))[[1]]
   k_val <- as.integer(parts[2])
   beta_val <- as.numeric(gsub("_", ".", parts[3]))
+  sigma_val <- as.numeric(gsub("_", ".", parts[4]))
+  grid_val <- as.integer(parts[5])
 
   for (name in model_names) {
     vals <- lapply(all_metrics, function(r) r[[name]])
@@ -42,6 +44,8 @@ for (f in files) {
       scenario = sc_tag,
       k = k_val,
       beta = beta_val,
+      sigma = sigma_val,
+      grid = grid_val,
       model = name,
       n_reps = n_reps,
       ARI_mean = mean(ari_vals, na.rm = TRUE),
@@ -59,7 +63,7 @@ summary_df <- do.call(rbind, rows)
 
 cat(sprintf("\n%d rows (%d scenarios x %d models)\n",
             nrow(summary_df), length(files), length(model_names)))
-print(summary_df[, c("scenario", "k", "beta", "model",
+print(summary_df[, c("scenario", "k", "beta", "sigma", "grid", "model",
                       "ARI_mean", "misclass_mean", "time_mean")],
       row.names = FALSE)
 

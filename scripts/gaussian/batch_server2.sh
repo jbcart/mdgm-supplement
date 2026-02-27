@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-## Server 2 (72 cores): k=3 scenarios
+## Server 2 (72 cores): k=5 low + high noise, 100x100 grid
 ## Scenarios 7-12
 set -euo pipefail
 cd "$(dirname "$0")/../.."

@@ -36,20 +36,36 @@ code/
 | 17-24 | `p0_{1..8}e0_1l1_39o1g16` | 0.1-0.8 | (0.10, 0.90) | Pois(1.39), ~25% missing |
 | 25-32 | `p0_{1..8}e0_1l2_3o1g16` | 0.1-0.8 | (0.10, 0.90) | Pois(2.3), ~10% missing |
 
-## Gaussian study (100x100 grid, Gaussian emissions)
+## Gaussian study (Gaussian emissions)
 
-18 scenarios (k=2,3,6 x 6 beta values), 50 replicates each, 4 methods (mdgm_st, mdgm_ao, mrf_pl, bis_pfab):
+15 scenarios, 20 replicates each, 4 methods (mdgm_st, mdgm_ao, mrf_pl, bis_pfab):
 
 ```bash
 # Run via GNU parallel (recommended for servers)
-./scripts/gaussian/run_scenario.sh 1      # scenario 1, 50 reps
-./scripts/gaussian/batch_server1.sh       # k=6 scenarios (13-18)
+./scripts/gaussian/run_scenario.sh 1      # scenario 1, 20 reps
+./scripts/gaussian/batch_server1.sh       # k=3 + k=4, 100x100 (1-6)
+./scripts/gaussian/batch_server2.sh       # k=5 low + high noise, 100x100 (7-12)
+./scripts/gaussian/batch_server3.sh       # k=5, 1000x1000 (13-15)
 ```
 
 ### Scenario index mapping
 
-| Index | k | beta values |
-|-------|---|-------------|
-| 1-6 | 2 | 0.15, 0.30, 0.45, 0.60, 0.75, 0.85 |
-| 7-12 | 3 | 0.17, 0.33, 0.50, 0.67, 0.83, 1.00 |
-| 13-18 | 6 | 0.20, 0.40, 0.60, 0.80, 1.00, 1.20 |
+| Idx | k | grid | sigma | beta |
+|-----|---|------|-------|------|
+| 1 | 3 | 100 | 0.20 | 0.35 |
+| 2 | 3 | 100 | 0.20 | 0.65 |
+| 3 | 3 | 100 | 0.20 | 0.95 |
+| 4 | 4 | 100 | 0.20 | 0.38 |
+| 5 | 4 | 100 | 0.20 | 0.71 |
+| 6 | 4 | 100 | 0.20 | 1.04 |
+| 7 | 5 | 100 | 0.20 | 0.41 |
+| 8 | 5 | 100 | 0.20 | 0.76 |
+| 9 | 5 | 100 | 0.20 | 1.12 |
+| 10 | 5 | 100 | 0.50 | 0.41 |
+| 11 | 5 | 100 | 0.50 | 0.76 |
+| 12 | 5 | 100 | 0.50 | 1.12 |
+| 13 | 5 | 1000 | 0.20 | 0.41 |
+| 14 | 5 | 1000 | 0.20 | 0.76 |
+| 15 | 5 | 1000 | 0.20 | 1.12 |
+
+Tag format: `gauss_k<K>_b<BETA>_s<SIGMA>_g<GRID>` (e.g., `gauss_k3_b0_35_s0_20_g100`)
