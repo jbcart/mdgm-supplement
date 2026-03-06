@@ -26,11 +26,10 @@ make_tag <- function(k, beta, sigma, grid) {
           grid)
 }
 scenarios <- character(0)
-for (b in c(0.35, 0.65, 0.95)) scenarios <- c(scenarios, make_tag(3, b, 0.20, 100))
-for (b in c(0.38, 0.71, 1.04)) scenarios <- c(scenarios, make_tag(4, b, 0.20, 100))
-for (b in c(0.41, 0.76, 1.12)) scenarios <- c(scenarios, make_tag(5, b, 0.20, 100))
+for (b in c(0.35, 0.65, 0.95)) scenarios <- c(scenarios, make_tag(3, b, 0.50, 100))
+for (b in c(0.38, 0.71, 1.04)) scenarios <- c(scenarios, make_tag(4, b, 0.50, 100))
 for (b in c(0.41, 0.76, 1.12)) scenarios <- c(scenarios, make_tag(5, b, 0.50, 100))
-for (b in c(0.41, 0.76, 1.12)) scenarios <- c(scenarios, make_tag(5, b, 0.20, 1000))
+for (b in c(0.43, 0.80, 1.18)) scenarios <- c(scenarios, make_tag(6, b, 0.50, 100))
 cat(scenarios['"$SCENARIO_IDX"'])
 ')
 

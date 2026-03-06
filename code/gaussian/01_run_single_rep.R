@@ -2,7 +2,7 @@
 ##
 ## Usage: Rscript code/gaussian/01_run_single_rep.R <scenario_index> <rep>
 ##
-## 15 scenarios (see scenario table below); 20 reps each.
+## 12 scenarios (see scenario table below); 20 reps each.
 ## Saves per-rep results to:
 ##   output/<scenario_tag>/rep_<NNN>.rds
 
@@ -23,12 +23,14 @@ burnin <- 2000L
 
 model_names <- c("mdgm_st", "mdgm_ao", "mrf_pl", "bis_pfab")
 
-# --- Define 15 scenarios ---
+# --- Define 12 scenarios ---
 # Tag format: gauss_k<K>_b<BETA>_s<SIGMA>_g<GRID>
+# All scenarios use 100x100 grid, sigma=0.50 (sigma2=0.25).
 # Beta values at ~0.35/0.65/0.95 × beta_c where beta_c = log(1 + sqrt(k)):
 #   k=3: beta_c ~= 1.005 → 0.35, 0.65, 0.95
 #   k=4: beta_c ~= 1.099 → 0.38, 0.71, 1.04
 #   k=5: beta_c ~= 1.179 → 0.41, 0.76, 1.12
+#   k=6: beta_c ~= 1.238 → 0.43, 0.80, 1.18
 make_tag <- function(k, beta, sigma, grid) {
   sprintf("gauss_k%d_b%s_s%s_g%d",
           k,
@@ -39,34 +41,25 @@ make_tag <- function(k, beta, sigma, grid) {
 
 scenarios <- list()
 
-# k=3, 100x100, sigma=0.20 (indices 1-3)
+# k=3, 100x100, sigma=0.50 (indices 1-3)
 for (beta in c(0.35, 0.65, 0.95)) {
-  tag <- make_tag(3, beta, 0.20, 100)
+  tag <- make_tag(3, beta, 0.50, 100)
   scenarios[[tag]] <- list(
     k = 3L, beta = beta, grid = 100L,
-    mu = c(-1, 0, 1), sigma2 = rep(0.04, 3)
+    mu = c(-1, 0, 1), sigma2 = rep(0.25, 3)
   )
 }
 
-# k=4, 100x100, sigma=0.20 (indices 4-6)
+# k=4, 100x100, sigma=0.50 (indices 4-6)
 for (beta in c(0.38, 0.71, 1.04)) {
-  tag <- make_tag(4, beta, 0.20, 100)
+  tag <- make_tag(4, beta, 0.50, 100)
   scenarios[[tag]] <- list(
     k = 4L, beta = beta, grid = 100L,
-    mu = c(-1, 0, 1, 2), sigma2 = rep(0.04, 4)
+    mu = c(-1, 0, 1, 2), sigma2 = rep(0.25, 4)
   )
 }
 
-# k=5, 100x100, sigma=0.20 (indices 7-9)
-for (beta in c(0.41, 0.76, 1.12)) {
-  tag <- make_tag(5, beta, 0.20, 100)
-  scenarios[[tag]] <- list(
-    k = 5L, beta = beta, grid = 100L,
-    mu = c(-2, -1, 0, 1, 2), sigma2 = rep(0.04, 5)
-  )
-}
-
-# k=5, 100x100, sigma=0.50 (indices 10-12)
+# k=5, 100x100, sigma=0.50 (indices 7-9)
 for (beta in c(0.41, 0.76, 1.12)) {
   tag <- make_tag(5, beta, 0.50, 100)
   scenarios[[tag]] <- list(
@@ -75,12 +68,12 @@ for (beta in c(0.41, 0.76, 1.12)) {
   )
 }
 
-# k=5, 1000x1000, sigma=0.20 (indices 13-15)
-for (beta in c(0.41, 0.76, 1.12)) {
-  tag <- make_tag(5, beta, 0.20, 1000)
+# k=6, 100x100, sigma=0.50 (indices 10-12)
+for (beta in c(0.43, 0.80, 1.18)) {
+  tag <- make_tag(6, beta, 0.50, 100)
   scenarios[[tag]] <- list(
-    k = 5L, beta = beta, grid = 1000L,
-    mu = c(-2, -1, 0, 1, 2), sigma2 = rep(0.04, 5)
+    k = 6L, beta = beta, grid = 100L,
+    mu = c(-2, -1, 0, 1, 2, 3), sigma2 = rep(0.25, 6)
   )
 }
 
@@ -153,7 +146,7 @@ theta_init <- c(mu_true, sigma2_true)
 
 # --- Fit mdgm/mrf methods ---
 # Process one model at a time, extracting metrics and freeing the fit object
-# to avoid exhausting memory on large grids (1000x1000 → ~40 GB per MDGM chain).
+# to keep memory usage manageable.
 rep_metrics <- list()
 
 for (name in c("mdgm_st", "mdgm_ao", "mrf_pl")) {

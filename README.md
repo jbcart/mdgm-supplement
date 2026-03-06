@@ -29,7 +29,7 @@ Rscript code/binary/00_setup.R
 code/
   common/helpers.R           # Shared utilities
   binary/                    # Binary study (16x16, Bernoulli emissions, 32 scenarios)
-  gaussian/                  # Gaussian study (100x100 + 1000x1000, 15 scenarios)
+  gaussian/                  # Gaussian study (100x100, 12 scenarios, k=3-6)
 scripts/
   binary/                    # Shell scripts for binary batch execution
   gaussian/                  # Shell scripts for Gaussian batch execution

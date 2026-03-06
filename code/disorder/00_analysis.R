@@ -289,5 +289,66 @@ legend("topright",
        lty = 2, lwd = 2, cex = 1.3)
 dev.off()
 
+# 7. EIP over block group outlines (continuous scale)
+seg_df <- data.frame(
+  x    = bg_layout[eip$vertex1, 1],
+  y    = bg_layout[eip$vertex1, 2],
+  xend = bg_layout[eip$vertex2, 1],
+  yend = bg_layout[eip$vertex2, 2],
+  prob = eip$prob
+)
+
+jpeg(file.path(figdir, "eip_over_bg.jpeg"), height = h, width = w, quality = q)
+print(
+  ggplot() +
+    geom_sf(data = bg270, fill = NA, color = "grey80", linewidth = 0.3) +
+    geom_segment(data = seg_df[seg_df$prob >= 0.1, ],
+                 aes(x = x, y = y, xend = xend, yend = yend,
+                     color = prob),
+                 linewidth = 0.6, alpha = 0.8) +
+    scale_color_viridis_c(option = "inferno", direction = 1,
+                          name = "EIP", limits = c(0, 1)) +
+    theme_void() +
+    theme(text = element_text(size = 20),
+          plot.title = element_text(hjust = 0.5)) +
+    labs(title = "Edge Inclusion Probability")
+)
+dev.off()
+
+# 8. EIP cutoffs over block group outlines (2x2)
+library(patchwork)
+
+cutoff_panels <- lapply(seq_along(qs), function(i) {
+  cutoff <- qs[i]
+  pct_label <- c("25th", "50th", "75th")[i]
+  seg_cut <- seg_df[seg_df$prob >= cutoff, ]
+  p <- ggplot() +
+    geom_sf(data = bg270, fill = NA, color = "grey80", linewidth = 0.3)
+  if (nrow(seg_cut) > 0) {
+    p <- p + geom_segment(data = seg_cut,
+                          aes(x = x, y = y, xend = xend, yend = yend),
+                          color = "#882255", linewidth = 0.6, alpha = 0.7)
+  }
+  p + theme_void() +
+    theme(text = element_text(size = 16),
+          plot.title = element_text(hjust = 0.5)) +
+    ggtitle(sprintf("%s pctl (>= %.2f)", pct_label, cutoff))
+})
+
+hist_panel <- ggplot(eip, aes(x = prob)) +
+  geom_histogram(bins = 30, fill = "grey70", color = "white") +
+  geom_vline(xintercept = qs, linetype = 2, linewidth = 0.8,
+             color = c("#332288", "#44AA99", "#882255")) +
+  theme_bw() +
+  theme(text = element_text(size = 16)) +
+  labs(x = "Edge Inclusion Probability", y = "Frequency",
+       title = "EIP Distribution")
+
+jpeg(file.path(figdir, "eip_cutoffs_over_bg.jpeg"),
+     height = h * 2, width = w * 2, quality = q)
+print((cutoff_panels[[1]] | cutoff_panels[[2]]) /
+      (cutoff_panels[[3]] | hist_panel))
+dev.off()
+
 cat("\nPlots saved to", figdir, "\n")
 cat("Done.\n")
