@@ -144,6 +144,11 @@ z_init <- sample(0L:(k - 1L), n, replace = TRUE)
 # theta_init: concatenate means then variances (Gaussian format)
 theta_init <- c(mu_true, sigma2_true)
 
+# --- Priors for Gaussian emission parameters ---
+# Match bayesImageS: mu_k ~ N(0, 100^2), sigma_k^2 ~ InvGamma(1.5, 1.5)
+# bayesImageS parameterizes as Inv-Chi^2(nu=3, s^2=1) = InvGamma(3/2, 3/2)
+gaussian_prior <- c(0, 10000, 1.5, 1.5)
+
 # --- Fit mdgm/mrf methods ---
 # Process one model at a time, extracting metrics and freeing the fit object
 # to keep memory usage manageable.
@@ -158,6 +163,7 @@ for (name in c("mdgm_st", "mdgm_ao", "mrf_pl")) {
   fit <- mcmc(model, y = y, z_init = z_init,
               psi_init = cfg$psi_init, theta_init = theta_init,
               n_iter = n_iter, psi_tune = cfg$psi_tune,
+              emission_prior_params = gaussian_prior,
               store_z = TRUE,
               seed = as.integer((data_seed + match(name, model_names) * 999983L) %% .Machine$integer.max),
               nug = nug)
