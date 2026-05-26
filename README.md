@@ -43,10 +43,11 @@ output/
 
 | Paper element | Script |
 |---------------|--------|
-| Figure 1 (binary simulation, missing data) | `code/tables_plots.R` → `sim_binary_bs.jpeg` |
+| Figure 1 (binary sim, 16x16, missing data) | `code/tables_plots.R` → `sim_o1g16_lambda_bs.jpeg` |
 | Figure 2 (Columbus posterior maps and comparison) | `code/disorder/00_analysis.R` → `posterior_mdgm_st.jpeg`, `posterior_difference.jpeg`, `posterior_comparison.jpeg` |
-| Appendix Figure (binary sim, complete data, 16x16) | `code/tables_plots.R` → `sim_binary_bs.jpeg` |
-| Appendix Figure (binary sim, 32x32) | `code/tables_plots.R` → `sim_binary_bs.jpeg` |
+| Appendix Figure (binary sim, 16x16, complete data) | `code/tables_plots.R` → `sim_o1g16_error_bs.jpeg` |
+| Appendix Figure (binary sim, 32x32, complete data) | `code/tables_plots.R` → `sim_o1g32_error_bs.jpeg` |
+| Appendix Figure (binary sim, 32x32, missing data) | `code/tables_plots.R` → `sim_o1g32_lambda_bs.jpeg` |
 | Appendix Figure (Gaussian simulation) | `code/tables_plots.R` → `sim_gaussian_bs.jpeg` |
 | Appendix Figure (edge inclusion probabilities) | `code/disorder/00_analysis.R` → `edge_inclusion.jpeg` |
 | Appendix (cross-validation results) | `code/disorder/01_cv_single_run.R` + `02_cv_aggregate.R` |

@@ -3,8 +3,9 @@
 ## Usage: Rscript code/tables_plots.R
 ## (Run from the mdgm-supplement root directory)
 ##
-## Produces faceted comparison plots (bootstrap CIs) for both the
-## binary and Gaussian simulation studies.
+## Produces faceted comparison plots (bootstrap CIs) for the
+## binary (16x16 and 32x32) and Gaussian simulation studies.
+## Output filenames match those referenced in the paper.
 
 library(tidyverse)
 
@@ -24,6 +25,32 @@ compute_boot <- function(x) {
   )
 }
 
+# ---------------------------------------------------------------------------
+# Helper: plot a binary simulation figure
+# ---------------------------------------------------------------------------
+plot_binary <- function(df_summary, pic_name, h = 800, w = 1200) {
+  colors_bin <- c("#88CCEE", "#117733", "#882255", "#AA4499")
+  q <- 90; ebw <- 0.6; ps <- 0.7; dw <- 0.7; text_size <- 25
+
+  jpeg(pic_name, height = h, width = w, quality = q)
+  print(
+    ggplot(df_summary) +
+      geom_errorbar(aes(ymin = bsp05, ymax = bsp95,
+                         x = as.factor(psi), color = model),
+                    position = position_dodge(width = dw),
+                    width = ebw, linewidth = ebw) +
+      geom_point(aes(y = mean, x = as.factor(psi), color = model),
+                 size = ps, position = position_dodge(width = dw)) +
+      facet_wrap(facet_var ~ stat, scales = "free") +
+      theme_bw() +
+      scale_color_manual(values = colors_bin) +
+      theme(text = element_text(size = text_size)) +
+      labs(color = "Model", y = "", x = "\u03B2")
+  )
+  dev.off()
+  cat(sprintf("Saved %s\n", pic_name))
+}
+
 # ===========================================================================
 # Binary study
 # ===========================================================================
@@ -33,16 +60,17 @@ bin_files <- sort(list.files("output",
 if (length(bin_files) > 0) {
   cat(sprintf("\n=== Binary study: %d scenario files ===\n", length(bin_files)))
 
-  bin_model_names <- c("mrf_exact", "mrf_pl", "mdgm_st", "mdgm_ao")
-
   rows <- list()
   for (f in bin_files) {
     sc_tag <- sub("_\\d+rep\\.rds$", "", basename(f))
 
-    # Parse tag: p0_<PSI>e0_<E>r<R>o1g<G> or p0_<PSI>e0_<E>l<L>o1g<G>
     # Extract psi
     psi_match <- regmatches(sc_tag, regexec("^p0_(\\d+)", sc_tag))[[1]]
     psi_val <- as.numeric(paste0("0.", psi_match[2]))
+
+    # Extract grid size
+    grid_match <- regmatches(sc_tag, regexec("g(\\d+)$", sc_tag))[[1]]
+    grid_val <- as.integer(grid_match[2])
 
     # Detect lambda vs fixed-rep scenario
     is_lambda <- grepl("l\\d", sc_tag)
@@ -66,6 +94,7 @@ if (length(bin_files) > 0) {
           psi    = psi_val,
           eta    = eta_val,
           lambda = lambda_val,
+          grid   = grid_val,
           model  = m,
           rep    = r,
           acc_pm   = v$acc_pm,
@@ -95,68 +124,63 @@ if (length(bin_files) > 0) {
                  names_to = "stat", values_to = "value") %>%
     filter(!is.na(value))
 
-  # Determine faceting variable
-  has_lambda <- any(!is.na(df_bin_raw$lambda))
-  has_eta    <- any(!is.na(df_bin_raw$eta))
+  # Model factor levels
+  model_levels <- c("mdgm_ao", "mdgm_st", "mrf_exact", "mrf_pl")
+  model_labels <- c("MDGM-AO", "MDGM-ST", "MRF", "aMRF")
 
-  if (has_lambda) {
-    df_bin_summary <- df_bin_long %>%
-      group_by(psi, lambda, model, stat) %>%
-      summarise(compute_boot(value), .groups = "drop")
+  stat_levels <- c("acc_pm", "rmse_eq", "tv")
+  stat_labels <- c("Accuracy", "RMSE", "TVD")
 
-    df_bin_summary$facet_var <- factor(
-      df_bin_summary$lambda,
-      levels = sort(unique(df_bin_summary$lambda), decreasing = TRUE),
-      labels = paste0("Rate Missing\u2248",
-        ifelse(sort(unique(df_bin_summary$lambda), decreasing = TRUE) < 2,
-               "25%", "10%")))
-  } else {
-    df_bin_summary <- df_bin_long %>%
-      group_by(psi, eta, model, stat) %>%
-      summarise(compute_boot(value), .groups = "drop")
+  # --- Generate figures per grid size and scenario type ---
+  grid_sizes <- sort(unique(df_bin_long$grid))
 
-    df_bin_summary$facet_var <- factor(
-      df_bin_summary$eta,
-      levels = sort(unique(df_bin_summary$eta)),
-      labels = paste0("\u03B7=", sort(unique(df_bin_summary$eta))))
+  for (g in grid_sizes) {
+    df_g <- df_bin_long %>% filter(grid == g)
+
+    # Lambda scenarios (missing data)
+    df_lambda <- df_g %>% filter(!is.na(lambda))
+    if (nrow(df_lambda) > 0) {
+      df_summary <- df_lambda %>%
+        group_by(psi, lambda, model, stat) %>%
+        summarise(compute_boot(value), .groups = "drop")
+
+      df_summary$facet_var <- factor(
+        df_summary$lambda,
+        levels = sort(unique(df_summary$lambda), decreasing = TRUE),
+        labels = paste0("Rate Missing\u2248",
+          ifelse(sort(unique(df_summary$lambda), decreasing = TRUE) < 2,
+                 "25%", "10%")))
+
+      df_summary$model <- factor(df_summary$model,
+        levels = model_levels, labels = model_labels)
+      df_summary$stat <- factor(df_summary$stat,
+        levels = stat_levels, labels = stat_labels)
+
+      pic_name <- file.path(figdir, sprintf("sim_o1g%d_lambda_bs.jpeg", g))
+      plot_binary(df_summary, pic_name)
+    }
+
+    # Eta scenarios (complete data)
+    df_eta <- df_g %>% filter(!is.na(eta))
+    if (nrow(df_eta) > 0) {
+      df_summary <- df_eta %>%
+        group_by(psi, eta, model, stat) %>%
+        summarise(compute_boot(value), .groups = "drop")
+
+      df_summary$facet_var <- factor(
+        df_summary$eta,
+        levels = sort(unique(df_summary$eta)),
+        labels = paste0("\u03B7=", sort(unique(df_summary$eta))))
+
+      df_summary$model <- factor(df_summary$model,
+        levels = model_levels, labels = model_labels)
+      df_summary$stat <- factor(df_summary$stat,
+        levels = stat_levels, labels = stat_labels)
+
+      pic_name <- file.path(figdir, sprintf("sim_o1g%d_error_bs.jpeg", g))
+      plot_binary(df_summary, pic_name)
+    }
   }
-
-  df_bin_summary$model <- factor(df_bin_summary$model,
-    levels = c("mdgm_ao", "mdgm_st", "mrf_exact", "mrf_pl"),
-    labels = c("MDGM-AO", "MDGM-ST", "MRF", "aMRF"))
-
-  df_bin_summary$stat <- factor(df_bin_summary$stat,
-    levels = c("acc_pm", "rmse_eq", "tv"),
-    labels = c("Accuracy", "RMSE", "TVD"))
-
-  colors_bin <- c("#88CCEE", "#117733", "#882255", "#AA4499")
-
-  h_bin <- 800
-  w_bin <- 1200
-  q <- 90
-  ebw <- 0.6
-  ps  <- 0.7
-  dw  <- 0.7
-  text_size <- 25
-
-  pic_name <- file.path(figdir, "sim_binary_bs.jpeg")
-  jpeg(pic_name, height = h_bin, width = w_bin, quality = q)
-  print(
-    ggplot(df_bin_summary) +
-      geom_errorbar(aes(ymin = bsp05, ymax = bsp95,
-                         x = as.factor(psi), color = model),
-                    position = position_dodge(width = dw),
-                    width = ebw, linewidth = ebw) +
-      geom_point(aes(y = mean, x = as.factor(psi), color = model),
-                 size = ps, position = position_dodge(width = dw)) +
-      facet_wrap(facet_var ~ stat, scales = "free") +
-      theme_bw() +
-      scale_color_manual(values = colors_bin) +
-      theme(text = element_text(size = text_size)) +
-      labs(color = "Model", y = "", x = "\u03B2")
-  )
-  dev.off()
-  cat(sprintf("Saved %s\n", pic_name))
 } else {
   cat("\nNo binary study output found, skipping.\n")
 }
