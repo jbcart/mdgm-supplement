@@ -5,9 +5,9 @@
 ```
 code/
   common/
+    00_setup.R             # Install dependencies (mdgm from GitHub, mclust, bayesImageS)
     helpers.R              # Shared utilities: data generation, metrics, TV distance, diagnostics
   binary/
-    00_setup.R             # Install dependencies (mdgm from GitHub, mclust, bayesImageS)
     01_run_single_rep.R    # Fit 4 models for one replicate of one scenario
     02_aggregate_scenario.R  # Aggregate per-rep files for a single scenario
     03_aggregate_all.R     # Aggregate all scenarios into summary CSV
@@ -16,6 +16,13 @@ code/
     01_run_single_rep.R    # Fit 4 methods for one replicate of one Gaussian scenario
     02_aggregate_scenario.R  # Aggregate per-rep files for a single Gaussian scenario
     03_aggregate_all.R     # Aggregate all Gaussian scenarios into summary CSV
+  disorder/
+    00_analysis.R          # Columbus physical disorder analysis (MDGM-ST and aMRF)
+    01_cv_single_run.R     # Single cross-validation replicate
+    02_cv_aggregate.R      # Aggregate cross-validation results
+    clean_data.Rbin        # Anonymized AHDC garbage ratings data
+    run_cv.sh              # Batch script for cross-validation replicates
+  tables_plots.R           # Generate all figures from simulation and analysis output
 ```
 
 ## Binary study (16x16 grid, Bernoulli emissions)

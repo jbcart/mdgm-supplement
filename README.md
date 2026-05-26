@@ -1,47 +1,111 @@
 # mdgm-supplement
 
-Supplementary code for reproducing simulation studies in:
+Supplementary code for reproducing simulation studies and analyses in:
 
 > Carter, J. B. and Calder, C. A. (2024). "Mixture of Directed Graphical Models for Discrete Spatial Random Fields."
 > [arXiv:2406.15700](https://arxiv.org/abs/2406.15700)
 
 ## Requirements
 
-- R >= 4.1
-- [mdgm](https://github.com/jbcart/mdgm) R package (installed from GitHub)
+- R >= 4.1 (developed with R 4.5.3)
+- [mdgm](https://github.com/jbcart/mdgm) R package (>= 0.1.0, installed from GitHub)
+- CRAN packages: bayesImageS, sf, igraph, tidyverse, ggplot2, coda, patchwork, mclust
 
-## Quick Start
-
+Install all dependencies:
 ```bash
-# Install dependencies
-Rscript code/binary/00_setup.R
-
-# Run a single binary scenario (quick check)
-./scripts/binary/run_scenario.sh 1
-
-# Run a single Gaussian scenario
-./scripts/gaussian/run_scenario.sh 1
+Rscript code/common/00_setup.R
 ```
 
 ## Directory Structure
 
 ```
 code/
-  common/helpers.R           # Shared utilities
-  binary/                    # Binary study (16x16, Bernoulli emissions, 32 scenarios)
-  gaussian/                  # Gaussian study (100x100, 12 scenarios, k=3-6)
+  common/
+    00_setup.R               # Install dependencies
+    helpers.R                # Shared utilities
+  binary/                    # Binary simulation study (16x16, Bernoulli emissions, 32 scenarios)
+  gaussian/                  # Gaussian simulation study (100x100, 12 scenarios, k=3-6)
+  disorder/                  # Columbus physical disorder analysis and cross-validation
+    00_analysis.R            # Main analysis (MDGM-ST and aMRF)
+    01_cv_single_run.R       # Single cross-validation replicate
+    02_cv_aggregate.R        # Aggregate cross-validation results
+    clean_data.Rbin          # Anonymized AHDC garbage ratings data (see Data section below)
+  tables_plots.R             # Generate simulation study figures
 scripts/
   binary/                    # Shell scripts for binary batch execution
   gaussian/                  # Shell scripts for Gaussian batch execution
-output/                      # Generated results (not tracked by git)
+output/
+  figures/                   # Simulation study figures
+  disorder/figures/          # Application figures
 ```
+
+## Figure and Table Reproduction
+
+| Paper element | Script |
+|---------------|--------|
+| Figure 1 (binary simulation, missing data) | `code/tables_plots.R` → `sim_binary_bs.jpeg` |
+| Figure 2 (Columbus posterior maps and comparison) | `code/disorder/00_analysis.R` → `posterior_mdgm_st.jpeg`, `posterior_difference.jpeg`, `posterior_comparison.jpeg` |
+| Appendix Figure (binary sim, complete data, 16x16) | `code/tables_plots.R` → `sim_binary_bs.jpeg` |
+| Appendix Figure (binary sim, 32x32) | `code/tables_plots.R` → `sim_binary_bs.jpeg` |
+| Appendix Figure (Gaussian simulation) | `code/tables_plots.R` → `sim_gaussian_bs.jpeg` |
+| Appendix Figure (edge inclusion probabilities) | `code/disorder/00_analysis.R` → `edge_inclusion.jpeg` |
+| Appendix (cross-validation results) | `code/disorder/01_cv_single_run.R` + `02_cv_aggregate.R` |
+| Table 2 (Gaussian scenarios) | Parameters defined in `code/gaussian/01_run_single_rep.R` |
 
 ## Reproduction
 
-1. `Rscript code/binary/00_setup.R` -- install dependencies
+### Simulation studies
+
+1. `Rscript code/common/00_setup.R` -- install dependencies
 2. Run individual scenarios or server batches (see `code/README.md` for details)
 3. Aggregate results:
    ```bash
    Rscript code/binary/03_aggregate_all.R
    Rscript code/gaussian/03_aggregate_all.R
    ```
+4. Generate figures:
+   ```bash
+   Rscript code/tables_plots.R
+   ```
+
+### Columbus physical disorder analysis
+
+```bash
+Rscript code/disorder/00_analysis.R
+```
+
+### Cross-validation study
+
+```bash
+# Run all 100 replicates (or use run_cv.sh for batch execution)
+Rscript code/disorder/01_cv_single_run.R
+Rscript code/disorder/02_cv_aggregate.R
+```
+
+## Data
+
+The file `code/disorder/clean_data.Rbin` contains anonymized data from the Adolescent Health and Development in Context (AHDC) Study. Ratings are aggregated at the block group level with no cross-block-group respondent tracking. The file contains three R objects:
+
+- **`bg270`**: An `sf` data frame (615 rows × 15 columns) containing census block group geometries and identifiers for the 615 block groups within the I-270 belt loop of Columbus, Ohio. See the data dictionary below.
+- **`nug_bg270`**: A list of length 615 defining the first-order neighborhood structure (NUG). Each element `nug_bg270[[i]]` is an integer vector of the indices of block group `i`'s neighbors (rook contiguity).
+- **`y_bg270`**: A list of length 615 containing the binary garbage ratings for each block group. Each element `y_bg270[[i]]` is a numeric vector of 0/1 ratings (1 = garbage is "a big problem" or "somewhat of a problem", 0 = "not a problem"). Block groups with no ratings have `NA`.
+
+### Data dictionary for `bg270`
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `STATEFP` | character | FIPS state code (39 = Ohio) |
+| `COUNTYFP` | character | FIPS county code |
+| `TRACTCE` | character | Census tract code |
+| `BLKGRPCE` | character | Block group code within tract |
+| `GEOID` | character | Full block group FIPS identifier (state + county + tract + block group) |
+| `NAMELSAD` | character | Census name description (e.g., "Block Group 1") |
+| `MTFCC` | character | MAF/TIGER feature class code |
+| `FUNCSTAT` | character | Functional status code |
+| `ALAND` | numeric | Land area (square meters) |
+| `AWATER` | numeric | Water area (square meters) |
+| `INTPTLAT` | character | Latitude of the internal point |
+| `INTPTLON` | character | Longitude of the internal point |
+| `Area` | numeric | Area (square kilometers) |
+| `in270` | integer | Indicator for block group within I-270 belt loop (all 1) |
+| `geometry` | sfc_MULTIPOLYGON | Block group boundary polygon |
