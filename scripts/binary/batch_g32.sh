@@ -5,7 +5,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
-N_JOBS=${1:-4}
+N_JOBS=${1:-12}
 
 for i in $(seq 1 16); do
   ./scripts/binary/run_scenario_g32.sh $i 100 $N_JOBS
