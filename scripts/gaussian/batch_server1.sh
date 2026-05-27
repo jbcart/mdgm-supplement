@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 ## Server 1: k=3 + k=4, 100x100 grid, sigma=0.50
 ## Scenarios 1-6
-set -euo pipefail
+set -uo pipefail
 cd "$(dirname "$0")/../.."
 
 N_JOBS=6
 
 for i in 1 2 3 4 5 6; do
-  ./scripts/gaussian/run_scenario.sh $i 20 $N_JOBS
+  ./scripts/gaussian/run_scenario.sh $i 20 $N_JOBS || echo "WARNING: scenario $i failed, continuing..."
 done
 
 echo "Server 1 Gaussian batch complete."
