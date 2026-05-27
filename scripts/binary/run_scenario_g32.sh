@@ -27,8 +27,9 @@ echo "=== Scenario $SCENARIO_IDX: $SCENARIO_TAG ($N_REPS replicates, $N_JOBS job
 
 mkdir -p "output/$SCENARIO_TAG"
 
-seq 1 "$N_REPS" | parallel --jobs "$N_JOBS" --progress \
-  "Rscript code/binary/01_run_single_rep_g32.R $SCENARIO_IDX {}"
+# timeout and memory cap to prevent runaway processes
+seq 1 "$N_REPS" | parallel --jobs "$N_JOBS" --timeout 7200 --progress \
+  "ulimit -v 20000000; Rscript code/binary/01_run_single_rep_g32.R $SCENARIO_IDX {}"
 
 echo ""
 echo "All $N_REPS replicates complete for $SCENARIO_TAG"

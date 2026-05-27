@@ -32,9 +32,10 @@ echo "=== Scenario $SCENARIO_IDX: $SCENARIO_TAG ($N_REPS replicates) ==="
 # Create output directory
 mkdir -p "output/$SCENARIO_TAG"
 
-# Run replicates in parallel
-seq 1 "$N_REPS" | parallel --jobs "$N_JOBS" --progress \
-  "Rscript code/binary/01_run_single_rep.R $SCENARIO_IDX {}"
+# Run replicates in parallel (timeout kills runaway mrf_exact jobs;
+# ulimit caps virtual memory at 20GB per process)
+seq 1 "$N_REPS" | parallel --jobs "$N_JOBS" --timeout 1800 --progress \
+  "ulimit -v 20000000; Rscript code/binary/01_run_single_rep.R $SCENARIO_IDX {}"
 
 echo ""
 echo "All $N_REPS replicates complete for $SCENARIO_TAG"
