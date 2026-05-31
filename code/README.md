@@ -60,6 +60,13 @@ code/
 ./scripts/binary/run_scenario_g32.sh <index> [n_replicates] [n_jobs]
 ```
 
+### Scenario index mapping
+
+| Index | Scenario | psi | theta | Obs type |
+|-------|----------|-----|-------|----------|
+| 1-8 | `p0_{1..8}e0_2r2o1g32` | 0.1-0.8 | (0.20, 0.80) | 2 reps/site |
+| 9-16 | `p0_{1..8}e0_1l1_39o1g32` | 0.1-0.8 | (0.10, 0.90) | Pois(1.39), ~25% missing |
+
 ## Gaussian study (Gaussian emissions)
 
 12 scenarios, 20 replicates each, 4 methods (mdgm_st, mdgm_ao, mrf_pl, bis_pfab):
