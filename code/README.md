@@ -21,7 +21,6 @@ code/
     01_cv_single_run.R     # Single cross-validation replicate
     02_cv_aggregate.R      # Aggregate cross-validation results
     clean_data.Rbin        # Anonymized AHDC garbage ratings data
-    run_cv.sh              # Batch script for cross-validation replicates
   tables_plots.R           # Generate all figures from simulation and analysis output
 ```
 
@@ -30,28 +29,47 @@ code/
 32 scenarios, 100 replicates each, 4 models (mrf_exact, mrf_pl, mdgm_st, mdgm_ao):
 
 ```bash
-./scripts/binary/run_scenario.sh 1        # scenario 1, 100 reps
-./scripts/binary/batch_server1.sh         # scenarios 5-8, 13-16
+# Run all complete data scenarios (1-16)
+./scripts/binary/batch_complete.sh [n_jobs]
+
+# Run all missing data scenarios (17-32)
+./scripts/binary/batch_missing.sh [n_jobs]
+
+# Or run a single scenario
+./scripts/binary/run_scenario.sh <index> [n_replicates] [n_jobs]
 ```
 
 ### Scenario index mapping
 
-| Index | Scenario | psi | theta | Obs type |
-|-------|----------|-----|-------|----------|
-| 1-8 | `p0_{1..8}e0_2r2o1g16` | 0.1-0.8 | (0.20, 0.80) | 2 reps/site |
-| 9-16 | `p0_{1..8}e0_05r2o1g16` | 0.1-0.8 | (0.05, 0.95) | 2 reps/site |
-| 17-24 | `p0_{1..8}e0_1l1_39o1g16` | 0.1-0.8 | (0.10, 0.90) | Pois(1.39), ~25% missing |
-| 25-32 | `p0_{1..8}e0_1l2_3o1g16` | 0.1-0.8 | (0.10, 0.90) | Pois(2.3), ~10% missing |
+| Index | Scenario | psi | theta | Obs type | Batch |
+|-------|----------|-----|-------|----------|-------|
+| 1-8 | `p0_{1..8}e0_2r2o1g16` | 0.1-0.8 | (0.20, 0.80) | 2 reps/site | `batch_complete.sh` |
+| 9-16 | `p0_{1..8}e0_05r2o1g16` | 0.1-0.8 | (0.05, 0.95) | 2 reps/site | `batch_complete.sh` |
+| 17-24 | `p0_{1..8}e0_1l1_39o1g16` | 0.1-0.8 | (0.10, 0.90) | Pois(1.39), ~25% missing | `batch_missing.sh` |
+| 25-32 | `p0_{1..8}e0_1l2_3o1g16` | 0.1-0.8 | (0.10, 0.90) | Pois(2.3), ~10% missing | `batch_missing.sh` |
+
+## Binary study (32x32 grid, Bernoulli emissions)
+
+16 scenarios (high uncertainty only), 100 replicates each, 2 models (mdgm_st, mrf_pl):
+
+```bash
+# Run all 32x32 scenarios
+./scripts/binary/batch_g32.sh [n_jobs]
+
+# Or run a single scenario
+./scripts/binary/run_scenario_g32.sh <index> [n_replicates] [n_jobs]
+```
 
 ## Gaussian study (Gaussian emissions)
 
 12 scenarios, 20 replicates each, 4 methods (mdgm_st, mdgm_ao, mrf_pl, bis_pfab):
 
 ```bash
-# Run via GNU parallel (recommended for servers)
-./scripts/gaussian/run_scenario.sh 1      # scenario 1, 20 reps
-./scripts/gaussian/batch_server1.sh       # k=3 + k=4, 100x100 (1-6)
-./scripts/gaussian/batch_server2.sh       # k=5 + k=6, 100x100 (7-12)
+# Run all 12 Gaussian scenarios
+./scripts/gaussian/batch_all.sh [n_jobs]
+
+# Or run a single scenario
+./scripts/gaussian/run_scenario.sh <index> [n_replicates] [n_jobs]
 ```
 
 ### Scenario index mapping

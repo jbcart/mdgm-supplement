@@ -29,7 +29,8 @@ compute_boot <- function(x) {
 # Helper: plot a binary simulation figure
 # ---------------------------------------------------------------------------
 plot_binary <- function(df_summary, pic_name, h = 800, w = 1200) {
-  colors_bin <- c("#88CCEE", "#117733", "#882255", "#AA4499")
+  colors_bin <- c("MDGM-AO" = "#88CCEE", "MDGM-ST" = "#117733",
+                   "MRF" = "#882255", "aMRF" = "#AA4499")
   q <- 90; ebw <- 0.6; ps <- 0.7; dw <- 0.7; text_size <- 25
 
   jpeg(pic_name, height = h, width = w, quality = q)

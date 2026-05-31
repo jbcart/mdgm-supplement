@@ -4,10 +4,6 @@
 .Rproj.user/
 *.Rproj
 
-# Output data
-output/*.rds
-output/*.csv
-
 # OS artifacts
 .DS_Store
 Thumbs.db

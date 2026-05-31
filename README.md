@@ -34,6 +34,7 @@ code/
 scripts/
   binary/                    # Shell scripts for binary batch execution
   gaussian/                  # Shell scripts for Gaussian batch execution
+  disorder/                  # Shell scripts for cross-validation
 output/
   figures/                   # Simulation study figures
   disorder/figures/          # Application figures
@@ -57,17 +58,50 @@ output/
 
 ### Simulation studies
 
-1. `Rscript code/common/00_setup.R` -- install dependencies
-2. Run individual scenarios or server batches (see `code/README.md` for details)
+1. Install dependencies:
+   ```bash
+   Rscript code/common/00_setup.R
+   ```
+
+2. Run simulation batches (default 4 parallel jobs; pass a number to change):
+   ```bash
+   # Binary 16x16: complete data scenarios (1-16)
+   ./scripts/binary/batch_complete.sh [n_jobs]
+
+   # Binary 16x16: missing data scenarios (17-32)
+   ./scripts/binary/batch_missing.sh [n_jobs]
+
+   # Binary 32x32: all scenarios
+   ./scripts/binary/batch_g32.sh [n_jobs]
+
+   # Gaussian: all 12 scenarios
+   ./scripts/gaussian/batch_all.sh [n_jobs]
+   ```
+
+   Or run a single scenario:
+   ```bash
+   # Binary 16x16: single scenario (index 1-32)
+   ./scripts/binary/run_scenario.sh <scenario_index> [n_replicates] [n_jobs]
+
+   # Binary 32x32: single scenario (index 1-16)
+   ./scripts/binary/run_scenario_g32.sh <scenario_index> [n_replicates] [n_jobs]
+
+   # Gaussian: single scenario (index 1-12)
+   ./scripts/gaussian/run_scenario.sh <scenario_index> [n_replicates] [n_jobs]
+   ```
+
 3. Aggregate results:
    ```bash
    Rscript code/binary/03_aggregate_all.R
    Rscript code/gaussian/03_aggregate_all.R
    ```
+
 4. Generate figures:
    ```bash
    Rscript code/tables_plots.R
    ```
+
+See `code/README.md` for scenario index mappings.
 
 ### Columbus physical disorder analysis
 
@@ -78,9 +112,7 @@ Rscript code/disorder/00_analysis.R
 ### Cross-validation study
 
 ```bash
-# Run all 100 replicates (or use run_cv.sh for batch execution)
-Rscript code/disorder/01_cv_single_run.R
-Rscript code/disorder/02_cv_aggregate.R
+./scripts/disorder/run_cv.sh [n_runs]
 ```
 
 ## Data
