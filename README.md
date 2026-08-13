@@ -71,11 +71,10 @@ the simulation studies themselves):
 Rscript code/run_all.R
 ```
 
-This wrapper runs each analysis step in the order the results appear in the
-paper, printing which figure/table file each step produces. See
-`code/run_all.R` for details, including how to re-run the full simulation
-pipeline from scratch (`Rscript code/run_all.R --full`; requires GNU
-parallel and takes hours to days).
+This wrapper generates each figure and table that appears in the paper. To
+instead re-run the full simulation pipeline from scratch
+(`Rscript code/run_all.R --full`; requires GNU parallel and takes hours to
+days), see [Reproduction](#reproduction) below for the individual steps.
 
 ## Reproduction
 
