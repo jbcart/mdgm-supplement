@@ -2,8 +2,8 @@
 ##
 ## Usage: Rscript code/gaussian/02_aggregate_scenario.R <scenario_tag>
 ##
-## Reads all output/<tag>/rep_*.rds files and saves combined
-## output/<tag>_50rep.rds.
+## Reads all output/gaussian/<tag>/rep_*.rds files and saves combined
+## output/gaussian/<tag>_50rep.rds.
 
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) < 1) {
@@ -12,7 +12,7 @@ if (length(args) < 1) {
 sc_tag <- args[1]
 
 # --- Read per-rep files ---
-rep_dir <- file.path("output", sc_tag)
+rep_dir <- file.path("output", "gaussian", sc_tag)
 rep_files <- sort(list.files(rep_dir, pattern = "^rep_.*\\.rds$",
                              full.names = TRUE))
 
@@ -63,6 +63,6 @@ for (name in model_names) {
 cat("(parentheses = SD x 1000 for ARI/misclass/Brier, SD for time)\n\n")
 
 # --- Save combined result ---
-outfile <- sprintf("output/%s_%drep.rds", sc_tag, n_reps)
+outfile <- sprintf("output/gaussian/%s_%drep.rds", sc_tag, n_reps)
 saveRDS(all_metrics, outfile)
 cat(sprintf("Saved %s\n", outfile))

@@ -3,7 +3,7 @@
 ## Usage: Rscript code/disorder/02_cv_aggregate.R
 ## (Run from the mdgm-supplement root directory)
 
-cvdir <- file.path("output", "disorder_cv")
+cvdir <- file.path("output", "disorder")
 files <- list.files(cvdir, pattern = "^run_cv_.*\\.rds$", full.names = TRUE)
 
 if (length(files) == 0) {

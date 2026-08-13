@@ -125,7 +125,7 @@ for (name in model_names) {
 cat("\n")
 
 # --- Save per-rep result (TV distance computed at aggregation) ---
-outdir <- file.path("output", sc_name)
+outdir <- file.path("output", "binary", sc_name)
 dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 outfile <- file.path(outdir, sprintf("rep_%03d.rds", rep))
 saveRDS(rep_metrics, outfile)

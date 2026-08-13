@@ -182,7 +182,7 @@ for (name in c("mdgm_st", "mdgm_ao", "mrf_pl")) {
 
 # --- Fit bayesImageS PFAB (mcmcPotts with algorithm="aux") ---
 # Load or compute PFAB surrogate parameters (cached per grid-size x k combo)
-pfab_cache_dir <- file.path("output", "pfab_cache")
+pfab_cache_dir <- file.path("output", "gaussian", "pfab_cache")
 dir.create(pfab_cache_dir, showWarnings = FALSE, recursive = TRUE)
 pfab_cache_file <- file.path(pfab_cache_dir,
                               sprintf("k%d_g%d.rds", k, grid_rows))
@@ -232,7 +232,7 @@ if (!is.null(pfab_result)) {
 cat("\n")
 
 # --- Save per-rep result ---
-outdir <- file.path("output", sc_name)
+outdir <- file.path("output", "gaussian", sc_name)
 dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 outfile <- file.path(outdir, sprintf("rep_%03d.rds", rep))
 saveRDS(rep_metrics, outfile)

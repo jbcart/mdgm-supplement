@@ -2,11 +2,11 @@
 ##
 ## Usage: Rscript code/gaussian/03_aggregate_all.R [output_dir]
 ##
-## Reads all output/gauss_*_Nrep.rds files and produces
-## output/summary_gaussian.csv with one row per (scenario, model).
+## Reads all output/gaussian/gauss_*_Nrep.rds files and produces
+## output/gaussian/summary_gaussian.csv with one row per (scenario, model).
 
 args <- commandArgs(trailingOnly = TRUE)
-output_dir <- if (length(args) >= 1) args[1] else "output"
+output_dir <- if (length(args) >= 1) args[1] else "output/gaussian"
 
 files <- sort(list.files(output_dir, pattern = "^gauss_.*_\\d+rep\\.rds$",
                          full.names = TRUE))

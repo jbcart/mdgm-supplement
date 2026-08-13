@@ -4,7 +4,7 @@
 ## (Run from the mdgm-supplement root directory)
 ##
 ## Holds out 60 block groups, fits MDGM-ST and MRF-PL, computes MAE metrics.
-## Saves result to output/disorder_cv/run_cv_<NNN>.rds
+## Saves result to output/disorder/run_cv_<NNN>.rds
 
 library(mdgm)
 library(sf)
@@ -109,7 +109,7 @@ result <- c(
 )
 
 # --- Save ---
-outdir <- file.path("output", "disorder_cv")
+outdir <- file.path("output", "disorder")
 dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 outfile <- file.path(outdir, sprintf("run_cv_%03d.rds", iter))
 saveRDS(result, outfile)

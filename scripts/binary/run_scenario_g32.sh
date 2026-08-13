@@ -25,7 +25,7 @@ cat(scenarios['"$SCENARIO_IDX"'])
 
 echo "=== Scenario $SCENARIO_IDX: $SCENARIO_TAG ($N_REPS replicates, $N_JOBS jobs) ==="
 
-mkdir -p "output/$SCENARIO_TAG"
+mkdir -p "output/binary/$SCENARIO_TAG"
 
 # timeout and memory cap to prevent runaway processes
 seq 1 "$N_REPS" | parallel --jobs "$N_JOBS" --timeout 7200 --progress \

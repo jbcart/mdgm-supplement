@@ -30,7 +30,7 @@ cat(scenarios['"$SCENARIO_IDX"'])
 echo "=== Scenario $SCENARIO_IDX: $SCENARIO_TAG ($N_REPS replicates) ==="
 
 # Create output directory
-mkdir -p "output/$SCENARIO_TAG"
+mkdir -p "output/binary/$SCENARIO_TAG"
 
 # Run replicates in parallel (timeout kills runaway mrf_exact jobs;
 # ulimit caps virtual memory at 20GB per process)

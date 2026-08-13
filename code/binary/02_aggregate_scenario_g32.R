@@ -14,7 +14,7 @@ if (length(args) < 1) {
 sc_tag <- args[1]
 
 # --- Read per-rep files ---
-rep_dir <- file.path("output", sc_tag)
+rep_dir <- file.path("output", "binary", sc_tag)
 rep_files <- sort(list.files(rep_dir, pattern = "^rep_.*\\.rds$",
                              full.names = TRUE))
 
@@ -56,6 +56,6 @@ for (name in model_names) {
 cat("(parentheses = SD x 1000 except time = SD)\n\n")
 
 # --- Save combined result ---
-outfile <- sprintf("output/%s_%drep.rds", sc_tag, n_reps)
+outfile <- sprintf("output/binary/%s_%drep.rds", sc_tag, n_reps)
 saveRDS(all_metrics, outfile)
 cat(sprintf("Saved %s\n", outfile))

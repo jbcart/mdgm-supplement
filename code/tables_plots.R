@@ -9,8 +9,10 @@
 
 library(tidyverse)
 
-figdir <- file.path("output", "figures")
-dir.create(figdir, showWarnings = FALSE, recursive = TRUE)
+bin_figdir <- file.path("output", "binary", "figures")
+gauss_figdir <- file.path("output", "gaussian", "figures")
+dir.create(bin_figdir, showWarnings = FALSE, recursive = TRUE)
+dir.create(gauss_figdir, showWarnings = FALSE, recursive = TRUE)
 
 n_boot <- 1000
 
@@ -55,7 +57,7 @@ plot_binary <- function(df_summary, pic_name, h = 800, w = 1200) {
 # ===========================================================================
 # Binary study
 # ===========================================================================
-bin_files <- sort(list.files("output",
+bin_files <- sort(list.files(file.path("output", "binary"),
   pattern = "^p0_.*_\\d+rep\\.rds$", full.names = TRUE))
 
 if (length(bin_files) > 0) {
@@ -157,7 +159,7 @@ if (length(bin_files) > 0) {
       df_summary$stat <- factor(df_summary$stat,
         levels = stat_levels, labels = stat_labels)
 
-      pic_name <- file.path(figdir, sprintf("sim_o1g%d_lambda_bs.jpeg", g))
+      pic_name <- file.path(bin_figdir, sprintf("sim_o1g%d_lambda_bs.jpeg", g))
       plot_binary(df_summary, pic_name)
     }
 
@@ -178,7 +180,7 @@ if (length(bin_files) > 0) {
       df_summary$stat <- factor(df_summary$stat,
         levels = stat_levels, labels = stat_labels)
 
-      pic_name <- file.path(figdir, sprintf("sim_o1g%d_error_bs.jpeg", g))
+      pic_name <- file.path(bin_figdir, sprintf("sim_o1g%d_error_bs.jpeg", g))
       plot_binary(df_summary, pic_name)
     }
   }
@@ -189,7 +191,7 @@ if (length(bin_files) > 0) {
 # ===========================================================================
 # Gaussian study
 # ===========================================================================
-gauss_files <- sort(list.files("output",
+gauss_files <- sort(list.files(file.path("output", "gaussian"),
   pattern = "^gauss_k\\d+_b.+_s0_50_g\\d+_\\d+rep\\.rds$",
   full.names = TRUE))
 
@@ -261,7 +263,7 @@ if (length(gauss_files) > 0) {
   dw  <- 0.7
   text_size <- 20
 
-  pic_name <- file.path(figdir, "sim_gaussian_bs.jpeg")
+  pic_name <- file.path(gauss_figdir, "sim_gaussian_bs.jpeg")
   jpeg(pic_name, height = h_gauss, width = w_gauss, quality = q)
   print(
     ggplot(df_gauss_summary) +

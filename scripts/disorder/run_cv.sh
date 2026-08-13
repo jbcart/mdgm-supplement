@@ -6,7 +6,7 @@
 
 N_RUNS=${1:-100}
 
-mkdir -p output/disorder_cv
+mkdir -p output/disorder
 
 echo "Running ${N_RUNS} CV iterations..."
 seq 1 "$N_RUNS" | parallel --jobs 25% Rscript code/disorder/01_cv_single_run.R {}

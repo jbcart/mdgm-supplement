@@ -36,7 +36,7 @@ cat(scenarios['"$SCENARIO_IDX"'])
 echo "=== Scenario $SCENARIO_IDX: $SCENARIO_TAG ($N_REPS replicates) ==="
 
 # Create output directory
-mkdir -p "output/$SCENARIO_TAG"
+mkdir -p "output/gaussian/$SCENARIO_TAG"
 
 # Run replicates in parallel
 seq 1 "$N_REPS" | parallel --jobs "$N_JOBS" --progress \

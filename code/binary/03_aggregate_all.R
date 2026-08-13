@@ -2,11 +2,11 @@
 ##
 ## Usage: Rscript code/binary/03_aggregate_all.R [output_dir]
 ##
-## Reads all output/*_100rep.rds (or *_Nrep.rds) files and produces
-## output/summary_all.csv with one row per (scenario, model).
+## Reads all output/binary/*_100rep.rds (or *_Nrep.rds) files and produces
+## output/binary/summary_all.csv with one row per (scenario, model).
 
 args <- commandArgs(trailingOnly = TRUE)
-output_dir <- if (length(args) >= 1) args[1] else "output"
+output_dir <- if (length(args) >= 1) args[1] else "output/binary"
 
 files <- sort(list.files(output_dir, pattern = "_\\d+rep\\.rds$",
                          full.names = TRUE))

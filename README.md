@@ -36,23 +36,46 @@ scripts/
   gaussian/                  # Shell scripts for Gaussian batch execution
   disorder/                  # Shell scripts for cross-validation
 output/
-  figures/                   # Simulation study figures
-  disorder/figures/          # Application figures
+  binary/                    # Binary study: per-scenario .rds + figures/
+  gaussian/                  # Gaussian study: per-scenario .rds + figures/
+  disorder/                  # Disorder application: cv_summary.csv + figures/
 ```
 
 ## Figure and Table Reproduction
 
+The paper is submitted as two documents: the main paper and an
+online appendix with its own figure/table numbering.
+References below use "Main Paper" or "Appendix" to disambiguate.
+
 | Paper element | Script |
 |---------------|--------|
-| Figure 1 (binary sim, 16x16, missing data) | `code/tables_plots.R` → `sim_o1g16_lambda_bs.jpeg` |
-| Figure 2 (Columbus posterior maps and comparison) | `code/disorder/00_analysis.R` → `posterior_mdgm_st.jpeg`, `posterior_difference.jpeg`, `posterior_comparison.jpeg` |
-| Appendix Figure (binary sim, 16x16, complete data) | `code/tables_plots.R` → `sim_o1g16_error_bs.jpeg` |
-| Appendix Figure (binary sim, 32x32, complete data) | `code/tables_plots.R` → `sim_o1g32_error_bs.jpeg` |
-| Appendix Figure (binary sim, 32x32, missing data) | `code/tables_plots.R` → `sim_o1g32_lambda_bs.jpeg` |
-| Appendix Figure (Gaussian simulation) | `code/tables_plots.R` → `sim_gaussian_bs.jpeg` |
-| Appendix Figure (edge inclusion probabilities) | `code/disorder/00_analysis.R` → `edge_inclusion.jpeg` |
-| Appendix (cross-validation results) | `code/disorder/01_cv_single_run.R` + `02_cv_aggregate.R` |
-| Table 2 (Gaussian scenarios) | Parameters defined in `code/gaussian/01_run_single_rep.R` |
+| Main Paper Figure 1 (binary sim, 16x16, missing data) | `code/tables_plots.R` → `sim_o1g16_lambda_bs.jpeg` |
+| Main Paper Figure 2 (Columbus posterior maps and comparison) | `code/disorder/00_analysis.R` → `posterior_mdgm_st.jpeg`, `posterior_difference.jpeg`, `posterior_comparison.jpeg` |
+| Main Paper Table 1 (MCMC algorithm summary) | Hand-written; not code output |
+| Appendix Figure 6 (binary sim, 16x16, complete data) | `code/tables_plots.R` → `sim_o1g16_error_bs.jpeg` |
+| Appendix Figure 7 (binary sim, 32x32, complete data) | `code/tables_plots.R` → `sim_o1g32_error_bs.jpeg` |
+| Appendix Figure 8 (binary sim, 32x32, missing data) | `code/tables_plots.R` → `sim_o1g32_lambda_bs.jpeg` |
+| Appendix Table 1 (spanning tree generation timings) | Hand-written; not code output |
+| Appendix Table 2 (Gaussian simulation scenarios) | Parameters defined in `code/gaussian/01_run_single_rep.R` |
+| Appendix Figure 9 (Gaussian simulation results) | `code/tables_plots.R` → `sim_gaussian_bs.jpeg` |
+| Appendix Figure 10 (edge inclusion probabilities) | `code/disorder/00_analysis.R` → `edge_inclusion.jpeg` |
+| Appendix J (cross-validation results) | `code/disorder/01_cv_single_run.R` + `02_cv_aggregate.R` |
+
+## Quick Start
+
+To regenerate every figure and table above from the pre-computed simulation
+output already bundled in `output/` (fast, ~10-20 minutes; does not re-run
+the simulation studies themselves):
+
+```bash
+Rscript code/run_all.R
+```
+
+This wrapper runs each analysis step in the order the results appear in the
+paper, printing which figure/table file each step produces. See
+`code/run_all.R` for details, including how to re-run the full simulation
+pipeline from scratch (`Rscript code/run_all.R --full`; requires GNU
+parallel and takes hours to days).
 
 ## Reproduction
 
