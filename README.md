@@ -64,7 +64,7 @@ References below use "Main Paper" or "Appendix" to disambiguate.
 ## Quick Start
 
 To regenerate every figure and table above from the pre-computed simulation
-output already bundled in `output/` (fast, ~10-20 minutes; does not re-run
+output already bundled in `output/` (fast, ~1-2 minutes; does not re-run
 the simulation studies themselves):
 
 ```bash
@@ -86,7 +86,7 @@ parallel and takes hours to days).
    Rscript code/common/00_setup.R
    ```
 
-2. Run simulation batches (default 4 parallel jobs; pass a number to change):
+2. Run simulation batches (default 8 parallel jobs; pass a number to change):
    ```bash
    # Binary 16x16: complete data scenarios (1-16)
    ./scripts/binary/batch_complete.sh [n_jobs]
@@ -140,11 +140,21 @@ Rscript code/disorder/00_analysis.R
 
 ## Data
 
-The file `code/disorder/clean_data.Rbin` contains anonymized data from the Adolescent Health and Development in Context (AHDC) Study. Ratings are aggregated at the block group level with no cross-block-group respondent tracking. The file contains three R objects:
+The file `code/disorder/clean_data.Rbin` contains anonymized data from the
+Adolescent Health and Development in Context (AHDC) Study. Ratings are
+aggregated at the block group level with no cross-block-group respondent
+tracking. The file contains three R objects:
 
-- **`bg270`**: An `sf` data frame (615 rows × 15 columns) containing census block group geometries and identifiers for the 615 block groups within the I-270 belt loop of Columbus, Ohio. See the data dictionary below.
-- **`nug_bg270`**: A list of length 615 defining the first-order neighborhood structure (NUG). Each element `nug_bg270[[i]]` is an integer vector of the indices of block group `i`'s neighbors (rook contiguity).
-- **`y_bg270`**: A list of length 615 containing the binary garbage ratings for each block group. Each element `y_bg270[[i]]` is a numeric vector of 0/1 ratings (1 = garbage is "a big problem" or "somewhat of a problem", 0 = "not a problem"). Block groups with no ratings have `NA`.
+- **`bg270`**: An `sf` data frame (615 rows × 15 columns) containing census
+  block group geometries and identifiers for the 615 block groups within the
+  I-270 belt loop of Columbus, Ohio. See the data dictionary below.
+- **`nug_bg270`**: A list of length 615 defining the first-order neighborhood
+  structure (NUG). Each element `nug_bg270[[i]]` is an integer vector of the
+  indices of block group `i`'s neighbors (rook contiguity).
+- **`y_bg270`**: A list of length 615 containing the binary garbage ratings for
+  each block group. Each element `y_bg270[[i]]` is a numeric vector of 0/1
+  ratings (1 = garbage is "a big problem" or "somewhat of a problem", 0 = "not a
+  problem"). Block groups with no ratings have `NA`.
 
 ### Data dictionary for `bg270`
 
