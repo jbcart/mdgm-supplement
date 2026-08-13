@@ -52,6 +52,11 @@ References below use "Main Paper" or "Appendix" to disambiguate.
 | Main Paper Figure 1 (binary sim, 16x16, missing data) | `code/tables_plots.R` → `sim_o1g16_lambda_bs.jpeg` |
 | Main Paper Figure 2 (Columbus posterior maps and comparison) | `code/disorder/00_analysis.R` → `posterior_mdgm_st.jpeg`, `posterior_difference.jpeg`, `posterior_comparison.jpeg` |
 | Main Paper Table 1 (MCMC algorithm summary) | Hand-written; not code output |
+| Appendix Figure 1 (regular lattice and NUGs) | Drawn directly in LaTeX (TikZ); not code output |
+| Appendix Figure 2 (compatible/incompatible DAG examples) | Manually created (`compatibility_example.png`); not code output |
+| Appendix Figure 3 (example undirected graph) | Drawn directly in LaTeX (TikZ); not code output |
+| Appendix Figure 4 (example DAG) | Drawn directly in LaTeX (TikZ); not code output |
+| Appendix Figure 5 (undirected graph and non-equivalent DAGs) | Drawn directly in LaTeX (TikZ); not code output |
 | Appendix Figure 6 (binary sim, 16x16, complete data) | `code/tables_plots.R` → `sim_o1g16_error_bs.jpeg` |
 | Appendix Figure 7 (binary sim, 32x32, complete data) | `code/tables_plots.R` → `sim_o1g32_error_bs.jpeg` |
 | Appendix Figure 8 (binary sim, 32x32, missing data) | `code/tables_plots.R` → `sim_o1g32_lambda_bs.jpeg` |
